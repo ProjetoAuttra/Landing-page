@@ -3,16 +3,28 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent,
   type ReactNode,
 } from "react";
 import logo from "./assets/auttra-logo.svg";
+import agendaScreen from "./assets/screens/agenda.webp";
+import atencaoScreen from "./assets/screens/atencao.webp";
+import estoqueScreen from "./assets/screens/estoque.webp";
+import financeiroScreen from "./assets/screens/financeiro.webp";
+import mobilePainelScreen from "./assets/screens/mobile-painel.webp";
+import orcamentosScreen from "./assets/screens/orcamentos.webp";
+import ordensScreen from "./assets/screens/ordens.webp";
+import painelScreen from "./assets/screens/painel.webp";
 
-const demoUrl =
-  import.meta.env.VITE_DEMO_URL?.trim() ||
-  "mailto:contato@auttra.com.br?subject=Quero%20conhecer%20a%20Auttra";
 const appUrl = import.meta.env.VITE_APP_URL?.trim() || "https://app.auttra.com.br";
+const formEndpoint = import.meta.env.VITE_FORM_ENDPOINT?.trim() || "";
+const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
+const whatsappUrl =
+  import.meta.env.VITE_WHATSAPP_URL?.trim() ||
+  `https://wa.me/5548991268901?text=${encodeURIComponent("Olá! Vim pelo site e quero conhecer a Auttra.")}`;
+const schedulingUrl = import.meta.env.VITE_SCHEDULING_URL?.trim() || "";
 
 type IconName =
   | "arrow"
@@ -22,7 +34,9 @@ type IconName =
   | "clipboard"
   | "close"
   | "menu"
+  | "message"
   | "package"
+  | "phone"
   | "shield"
   | "spark"
   | "users"
@@ -53,10 +67,22 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     ),
     close: <path d="m6 6 12 12M18 6 6 18" />,
     menu: <path d="M4 7h16M4 12h16M4 17h16" />,
+    message: (
+      <>
+        <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z" />
+        <path d="M8.4 8.4c.5 2.6 2.6 4.7 5.2 5.2" />
+      </>
+    ),
     package: (
       <>
         <path d="m4 7 8-4 8 4v10l-8 4-8-4Z" />
         <path d="m4 7 8 4 8-4M12 11v10" />
+      </>
+    ),
+    phone: (
+      <>
+        <rect x="6" y="2" width="12" height="20" rx="3" />
+        <path d="M10 5h4M11 18h2" />
       </>
     ),
     shield: (
@@ -99,96 +125,154 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
 }
 
 const navigation = [
-  ["Como funciona", "#direcao"],
+  ["Por que mudar", "#comparativo"],
+  ["Como funciona", "#atencao"],
   ["Produto", "#produto"],
+  ["Recursos", "#recursos"],
   ["Dúvidas", "#duvidas"],
 ];
 
-const directionSteps = [
+// Os mesmos avisos da tela inicial do sistema (painel.service no backend).
+const attentionAlerts = [
+  ["O.S. paradas há mais de 5 dias", "Mostra quantas são e há quanto tempo está parada a mais antiga, para nenhum carro ficar esquecido no pátio."],
+  ["Contas vencidas a receber", "Soma o que os clientes ainda devem, para a cobrança acontecer antes de virar prejuízo."],
+  ["Orçamentos sem resposta", "Separa o que está em análise há mais de 3 dias, na hora certa de ligar para o cliente."],
+  ["Estoque crítico", "Avisa quando uma peça chega a 3 unidades ou menos, antes de faltar no meio do serviço."],
+  ["Contas a pagar amanhã", "Lembra o que vence no dia seguinte, para o caixa não ser pego de surpresa."],
+];
+
+const features: { icon: IconName; title: string; text: string }[] = [
   {
-    id: "enxergar",
-    number: "01",
-    label: "Enxergue",
-    kicker: "Leitura da operação",
-    title: "Veja a oficina inteira sem procurar informação.",
-    text: "Ordens, agenda, recebimentos e estoque deixam de ser pontos soltos e formam uma visão única do negócio.",
-    items: ["Faturamento e recebimentos", "Ordens que pedem atenção", "Agenda e capacidade do dia"],
+    icon: "message",
+    title: "Orçamento no WhatsApp do cliente",
+    text: "Gere o orçamento em PDF e envie pelo WhatsApp sem sair da tela. Aprovado, ele vira ordem de serviço com um clique.",
   },
   {
-    id: "priorizar",
-    number: "02",
-    label: "Priorize",
-    kicker: "Próximo passo",
-    title: "Saiba o que precisa acontecer agora.",
-    text: "A Auttra destaca atrasos, vencimentos e pendências para transformar informação em uma fila clara de ação.",
-    items: ["Retomar orçamentos sem resposta", "Agir sobre O.S. paradas", "Antecipar itens em nível crítico"],
+    icon: "package",
+    title: "Estoque pela nota fiscal",
+    text: "Importe o XML da nota do fornecedor e as peças entram com custo e quantidade, sem digitar item por item.",
   },
   {
-    id: "avancar",
-    number: "03",
-    label: "Avance",
-    kicker: "Decisão com contexto",
-    title: "Mova a operação com mais segurança.",
-    text: "Cada ação preserva o histórico e alimenta relatórios para a próxima decisão nascer com mais contexto.",
-    items: ["Acompanhar resultado e caixa", "Comparar produtividade e rentabilidade", "Alinhar responsabilidades da equipe"],
+    icon: "clipboard",
+    title: "O.S. completa em PDF",
+    text: "Serviços, peças, mecânico responsável e valores na mesma ordem, pronta para imprimir ou mandar para o cliente.",
+  },
+  {
+    icon: "wallet",
+    title: "Contas a pagar e receber",
+    text: "Parcelas, desconto, multa e pagamento parcial. A O.S. concluída já gera a cobrança em contas a receber.",
+  },
+  {
+    icon: "chart",
+    title: "11 relatórios de gestão",
+    text: "Margem por O.S., produtividade por mecânico, inadimplência, orçamentos perdidos, fluxo de caixa, faturamento e mais.",
+  },
+  {
+    icon: "users",
+    title: "Cada função vê o que precisa",
+    text: "Perfis de Proprietário, Recepção e Mecânico, com permissões ajustáveis e verificação contra robôs no login.",
   },
 ];
 
 const faqs = [
   {
-    question: "A Auttra funciona direto no navegador?",
-    answer:
-      "Sim. A plataforma é acessada pela web, sem a necessidade de instalar um programa no computador da oficina.",
+    question: "Preciso instalar alguma coisa?",
+    answer: "Não. A Auttra funciona no navegador, no computador e no celular. É só entrar com o seu usuário e senha.",
   },
   {
-    question: "Quais áreas da oficina posso organizar?",
+    question: "O que dá para controlar na Auttra?",
     answer:
-      "Clientes, veículos, agenda, ordens de serviço, orçamentos, serviços, estoque, fornecedores, contas a pagar e receber e relatórios de gestão.",
+      "Clientes, veículos, agenda, orçamentos, ordens de serviço, serviços, estoque, fornecedores, contas a pagar e receber e relatórios. Agenda, estoque e fornecedores podem ser ligados ou desligados conforme a rotina da oficina.",
   },
   {
-    question: "Posso controlar o acesso da equipe?",
+    question: "Consigo mandar o orçamento para o cliente?",
     answer:
-      "Sim. A Auttra trabalha com perfis de acesso, para que cada função consulte e altere somente os módulos necessários à sua rotina.",
+      "Sim. O orçamento sai em PDF e vai para o WhatsApp do cliente direto da tela de orçamentos. Quando ele aprova, o orçamento vira ordem de serviço com um clique.",
   },
   {
-    question: "Como conheço a plataforma por dentro?",
+    question: "Dá para lançar as peças pela nota fiscal?",
+    answer: "Sim. Importe o XML da nota do fornecedor e as peças entram no estoque com custo e quantidade.",
+  },
+  {
+    question: "Cada funcionário vê tudo?",
     answer:
-      "Solicite uma demonstração. O contato comercial serve para entender sua operação e apresentar os fluxos mais relevantes para ela.",
+      "Não. Cada pessoa tem o próprio acesso, e os perfis de Proprietário, Recepção e Mecânico definem o que cada um pode ver e alterar. As permissões podem ser ajustadas.",
+  },
+  {
+    question: "Quanto custa e como funciona a contratação?",
+    answer:
+      "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento da equipe e as regras de contrato e cancelamento.",
   },
 ];
 
 const moduleScreens = [
   {
-    id: "painel",
-    label: "Painel",
-    eyebrow: "Ponto de partida",
-    title: "Comece o dia sabendo para onde olhar.",
-    text: "Um resumo de faturamento, recebimentos, agenda e pontos que precisam de atenção agora.",
-  },
-  {
     id: "ordens",
     label: "Ordens",
     eyebrow: "Operação",
     title: "Cada serviço com uma direção clara.",
-    text: "Consulte status, cliente, veículo, responsável e valor sem procurar em mensagens soltas.",
+    text: "Status, cliente, veículo, mecânico, valor e pagamento de cada O.S. na mesma lista, sem procurar em mensagens soltas.",
+    image: ordensScreen,
+    alt: "Lista de ordens de serviço da Auttra com cliente, veículo, mecânico, valor, status e pagamento",
+  },
+  {
+    id: "agenda",
+    label: "Agenda",
+    eyebrow: "Capacidade",
+    title: "A semana da oficina em uma tela.",
+    text: "Agendamentos por dia, com serviço, cliente e veículo, para distribuir o trabalho antes de o carro chegar.",
+    image: agendaScreen,
+    alt: "Agenda semanal da Auttra com os serviços agendados de cada dia",
   },
   {
     id: "financeiro",
     label: "Financeiro",
     eyebrow: "Previsibilidade",
     title: "Entenda o caminho do seu caixa.",
-    text: "Contas, recebimentos e vencimentos ficam perto do atendimento que deu origem a eles.",
+    text: "Recebido, pago, saldo e o que ainda vai entrar e sair, com as entradas por semana e por forma de pagamento.",
+    image: financeiroScreen,
+    alt: "Relatório de fluxo de caixa da Auttra com entradas, saídas e recebimentos por forma de pagamento",
   },
   {
     id: "estoque",
     label: "Estoque",
     eyebrow: "Antecipação",
     title: "Veja o que falta antes de parar.",
-    text: "Itens e fornecedores organizados para apoiar compras e execução dos serviços.",
+    text: "Custo, preço de venda e quantidade de cada peça, com alerta de estoque baixo e entrada pelo XML da nota.",
+    image: estoqueScreen,
+    alt: "Tela de estoque da Auttra com peças, custo, venda e alertas de estoque baixo",
+  },
+  {
+    id: "orcamentos",
+    label: "Orçamentos",
+    eyebrow: "Conversão",
+    title: "Nenhum orçamento esquecido.",
+    text: "Acompanhe o que está em análise, aprovado ou recusado e transforme o orçamento aprovado em O.S.",
+    image: orcamentosScreen,
+    alt: "Lista de orçamentos da Auttra com valores, validade e status",
   },
 ];
 
-const marqueeItems = ["Atendimento", "Ordens", "Financeiro", "Agenda", "Estoque", "Relatórios"];
+const comparisonColumns = [
+  {
+    tone: "before",
+    label: "Quando a informação fica espalhada",
+    title: "A equipe trabalha, mas a gestão precisa reconstruir o contexto.",
+    items: ["Consultar mensagens e controles separados", "Descobrir atrasos depois que viram urgência", "Tomar decisões com uma visão parcial da operação"],
+  },
+  {
+    tone: "after",
+    label: "Com a rotina conectada",
+    title: "A operação mostra onde está e o que precisa acontecer agora.",
+    items: ["Acompanhar ordens, agenda, estoque e financeiro", "Visualizar pendências que pedem atenção", "Preservar histórico para decidir com mais contexto"],
+  },
+];
+
+const demoSteps = [
+  ["01", "Conte sobre a oficina", "Nome, WhatsApp e quantos mecânicos trabalham com você."],
+  ["02", "A gente entende a rotina", "Como os carros entram, como o orçamento é aprovado e onde o controle aperta hoje."],
+  ["03", "Você vê a Auttra funcionando", "A demonstração segue o caminho do carro na sua oficina, do orçamento ao recebimento."],
+];
 
 function revealDelay(index: number): CSSProperties {
   return { "--reveal-delay": `${index * 90}ms` } as CSSProperties;
@@ -235,16 +319,234 @@ function moveTabFocus(
   requestAnimationFrame(() => document.getElementById(`${prefix}${ids[nextIndex]}`)?.focus());
 }
 
+type TrackingWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
+
+function trackEvent(name: string, params: Record<string, string> = {}) {
+  (window as TrackingWindow).gtag?.("event", name, { source: "landing_page", ...params });
+}
+
 function DemoLink({ children, className = "button button-primary" }: { children: ReactNode; className?: string }) {
-  const registerIntent = () => {
-    const trackingWindow = window as Window & { dataLayer?: Array<Record<string, string>> };
-    trackingWindow.dataLayer?.push({ event: "demo_click", source: "landing_page" });
+  return (
+    <a href="#demonstracao" className={className} onClick={() => trackEvent("demo_click")}>
+      {children}
+    </a>
+  );
+}
+
+function WhatsappLink({ children, className = "button button-whatsapp" }: { children: ReactNode; className?: string }) {
+  if (!whatsappUrl) return null;
+  return (
+    <a href={whatsappUrl} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click")}>
+      {children}
+    </a>
+  );
+}
+
+function enableAnalytics() {
+  const trackingWindow = window as TrackingWindow;
+  if (!gaMeasurementId || trackingWindow.gtag) return;
+
+  trackingWindow.dataLayer = trackingWindow.dataLayer || [];
+  // O gtag.js só reconhece o objeto `arguments`; arrays empurrados no dataLayer são ignorados.
+  trackingWindow.gtag = function gtag() {
+    // eslint-disable-next-line prefer-rest-params
+    trackingWindow.dataLayer!.push(arguments);
+  };
+  trackingWindow.gtag("js", new Date());
+  trackingWindow.gtag("config", gaMeasurementId, { anonymize_ip: true });
+
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
+  document.head.appendChild(script);
+}
+
+const consentKey = "auttra-cookie-consent";
+
+function readConsent() {
+  try {
+    return window.localStorage.getItem(consentKey);
+  } catch {
+    return null;
+  }
+}
+
+function CookieConsent() {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const saved = readConsent();
+    if (!saved) setVisible(true);
+    if (saved === "accepted") enableAnalytics();
+
+    const openSettings = () => setVisible(true);
+    window.addEventListener("auttra:cookie-settings", openSettings);
+    return () => window.removeEventListener("auttra:cookie-settings", openSettings);
+  }, []);
+
+  const choose = (choice: "accepted" | "rejected") => {
+    try {
+      window.localStorage.setItem(consentKey, choice);
+    } catch {
+      // Sem armazenamento a escolha vale só para esta visita.
+    }
+    if (choice === "accepted") enableAnalytics();
+    setVisible(false);
+  };
+
+  if (!visible) return null;
+
+  return (
+    <aside className="cookie-banner" aria-label="Preferências de cookies">
+      <div>
+        <strong>Privacidade sob seu controle</strong>
+        <p>
+          Usamos armazenamento essencial para lembrar suas escolhas. Métricas de acesso só são ativadas com sua autorização. Leia a nossa <a href="/privacidade/">Política de Privacidade</a>.
+        </p>
+      </div>
+      <div className="cookie-actions">
+        <button type="button" className="cookie-secondary" onClick={() => choose("rejected")}>Somente essenciais</button>
+        <button type="button" className="cookie-primary" onClick={() => choose("accepted")}>Aceitar métricas</button>
+      </div>
+    </aside>
+  );
+}
+
+function formatPhone(value: string) {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+// Origem da campanha, para saber de onde veio cada lead.
+function campaignParams() {
+  const params = new URLSearchParams(window.location.search);
+  return Object.fromEntries(
+    ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid"]
+      .map((key) => [key, params.get(key) || ""])
+      .filter(([, value]) => value),
+  );
+}
+
+function DemoForm() {
+  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [phone, setPhone] = useState("");
+
+  const submit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    if (data.get("website")) return;
+
+    setStatus("loading");
+    setErrorMessage("");
+
+    const payload = {
+      nome: String(data.get("nome") || ""),
+      whatsapp: String(data.get("whatsapp") || ""),
+      oficina: String(data.get("oficina") || ""),
+      mecanicos: String(data.get("mecanicos") || ""),
+      email: String(data.get("email") || ""),
+      origem: "landing_page",
+      ...campaignParams(),
+    };
+
+    try {
+      if (formEndpoint) {
+        const response = await fetch(formEndpoint, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!response.ok) throw new Error("Não foi possível enviar sua solicitação agora.");
+      } else {
+        // Sem endpoint, o lead chega pelo WhatsApp comercial com os dados já escritos.
+        const lines = [
+          "Olá! Quero conhecer a Auttra.",
+          "",
+          `Nome: ${payload.nome}`,
+          `Oficina: ${payload.oficina}`,
+          `Mecânicos: ${payload.mecanicos}`,
+          `WhatsApp: ${payload.whatsapp}`,
+        ];
+        if (payload.email) lines.push(`E-mail: ${payload.email}`);
+        const campaign = [payload.utm_source, payload.utm_medium, payload.utm_campaign].filter(Boolean).join(" / ");
+        if (campaign) lines.push(`Origem: ${campaign}`);
+
+        const url = `${whatsappUrl.split("?")[0]}?text=${encodeURIComponent(lines.join("\n"))}`;
+        // Abre antes de qualquer await para o navegador não bloquear a nova aba.
+        const opened = window.open(url, "_blank");
+        if (!opened) {
+          trackEvent("demo_form_success", { mecanicos: payload.mecanicos, channel: "whatsapp" });
+          window.location.href = url;
+          return;
+        }
+        opened.opener = null;
+      }
+
+      trackEvent("demo_form_success", { mecanicos: payload.mecanicos, channel: formEndpoint ? "endpoint" : "whatsapp" });
+      window.location.assign(formEndpoint ? "/obrigado/" : "/obrigado/?via=whatsapp");
+    } catch (error) {
+      setStatus("error");
+      setErrorMessage(error instanceof Error ? error.message : "Não foi possível enviar. Tente novamente ou fale por e-mail.");
+    }
   };
 
   return (
-    <a href={demoUrl} className={className} onClick={registerIntent}>
-      {children}
-    </a>
+    <form className="demo-form" onSubmit={submit}>
+      <div className="form-grid">
+        <label><span>Seu nome</span><input name="nome" autoComplete="name" required placeholder="Como podemos chamar você?" /></label>
+        <label>
+          <span>WhatsApp</span>
+          <input
+            name="whatsapp"
+            type="tel"
+            inputMode="tel"
+            autoComplete="tel"
+            required
+            minLength={14}
+            placeholder="(11) 99999-9999"
+            value={phone}
+            onChange={(event) => setPhone(formatPhone(event.target.value))}
+          />
+        </label>
+        <label><span>Nome da oficina</span><input name="oficina" autoComplete="organization" required placeholder="Sua oficina" /></label>
+        <label>
+          <span>Quantos mecânicos?</span>
+          <select name="mecanicos" required defaultValue="">
+            <option value="" disabled>Selecione</option>
+            <option>Só eu</option>
+            <option>2 a 3</option>
+            <option>4 a 6</option>
+            <option>7 ou mais</option>
+          </select>
+        </label>
+        <label className="form-wide"><span>E-mail <small>opcional</small></span><input name="email" type="email" autoComplete="email" placeholder="voce@oficina.com.br" /></label>
+      </div>
+      <label className="form-consent">
+        <input type="checkbox" required />
+        <span>Concordo em ser contatado sobre a Auttra e li a <a href="/privacidade/">Política de Privacidade</a>.</span>
+      </label>
+      <label className="form-honeypot" aria-hidden="true">Site<input name="website" tabIndex={-1} autoComplete="off" /></label>
+      {status === "error" && <p className="form-error" role="alert">{errorMessage} <a href="mailto:contato@auttra.com.br">contato@auttra.com.br</a></p>}
+      <button className="button button-light form-submit" type="submit" disabled={status === "loading"}>
+        {status === "loading"
+          ? <><span className="spinner" /> Enviando...</>
+          : formEndpoint
+            ? <>Solicitar demonstração <Icon name="arrow" size={18} /></>
+            : <><Icon name="message" size={18} /> Enviar pelo WhatsApp</>}
+      </button>
+      {schedulingUrl && <a className="form-schedule" href={schedulingUrl} target="_blank" rel="noreferrer">Prefere escolher um horário agora? <Icon name="calendar" size={15} /></a>}
+      <small className="form-assurance">
+        <Icon name="shield" size={15} />
+        {formEndpoint
+          ? "Seus dados serão usados apenas para responder a esta solicitação."
+          : "O WhatsApp abre com sua mensagem pronta. É só tocar em enviar."}
+      </small>
+    </form>
   );
 }
 
@@ -304,148 +606,35 @@ function Header() {
   );
 }
 
-function DashboardPreview({ compact = false }: { compact?: boolean }) {
+function MobilePreview() {
   return (
-    <div className={compact ? "dashboard compact" : "dashboard"}>
-      <aside className="dashboard-sidebar">
-        <div className="mini-mark" aria-hidden="true">A</div>
-        {[
-          ["Painel", "chart"],
-          ["Agenda", "calendar"],
-          ["Ordens", "clipboard"],
-          ["Financeiro", "wallet"],
-          ["Estoque", "package"],
-        ].map(([label, icon], index) => (
-          <div className={index === 0 ? "side-item active" : "side-item"} key={label}>
-            <Icon name={icon as IconName} size={17} />
-            <span>{label}</span>
-          </div>
-        ))}
-      </aside>
-
-      <div className="dashboard-main">
-        <div className="dash-topline">
-          <div>
-            <span className="demo-label">Dados ilustrativos</span>
-            <h3>Boa tarde, Marina</h3>
-            <p>quarta-feira, 28 de outubro · Oficina Central</p>
-          </div>
-          <button type="button" tabIndex={-1}>+ Novo</button>
-        </div>
-
-        <div className="dash-content">
-          <div className="revenue-panel">
-            <div className="metric-heading">
-              <span>Faturamento do mês</span>
-              <strong>R$ 42.680</strong>
-            </div>
-            <div className="chart-bars" aria-hidden="true">
-              {[36, 54, 42, 67, 58, 83, 70, 92, 78, 96, 84, 100].map((height, index) => (
-                <span key={`${height}-${index}`} style={{ height: `${height}%` }} />
-              ))}
-            </div>
-            <div className="chart-days"><span>01</span><span>07</span><span>14</span><span>21</span><span>28</span></div>
-          </div>
-
-          <div className="money-stack">
-            <div>
-              <span>A receber hoje</span>
-              <strong>R$ 3.240</strong>
-              <small>2 cobranças pendentes</small>
-            </div>
-            <div>
-              <span>A pagar na semana</span>
-              <strong>R$ 1.890</strong>
-              <small>3 contas programadas</small>
-            </div>
-          </div>
-        </div>
-
-        <div className="attention-panel">
-          <span className="panel-title">Precisa de atenção</span>
-          {[
-            ["3 O.S. paradas há mais de 5 dias", "Ver ordens"],
-            ["2 orçamentos aguardam resposta", "Retomar"],
-            ["5 itens chegaram ao estoque crítico", "Conferir"],
-          ].map(([title, action]) => (
-            <div className="attention-row" key={title}>
-              <span><i />{title}</span>
-              <b>{action} <Icon name="arrow" size={15} /></b>
-            </div>
-          ))}
+    <div className="phone-shell">
+      <div className="phone-frame">
+        <div className="phone-speaker" aria-hidden="true" />
+        <div className="mobile-screen">
+          <img
+            src={mobilePainelScreen}
+            alt="Tela inicial da Auttra no celular com faturamento do mês, gráfico diário e valores a receber e a pagar"
+            width={900}
+            height={1948}
+            loading="lazy"
+            decoding="async"
+          />
         </div>
       </div>
+      <div className="mobile-float-card float-top"><Icon name="check" size={17} /><span><b>Atualização registrada</b><small>O histórico acompanha a rotina.</small></span></div>
+      <div className="mobile-float-card float-bottom"><Icon name="phone" size={18} /><span><b>Auttra no celular</b><small>A mesma conta, onde você estiver.</small></span></div>
     </div>
   );
 }
 
-function ModulePreview({ module }: { module: string }) {
-  if (module === "ordens") {
-    return (
-      <div className="module-table">
-        <div className="module-toolbar"><strong>Ordens de serviço</strong><button type="button" tabIndex={-1}>Nova O.S.</button></div>
-        <div className="table-head"><span>O.S.</span><span>Cliente / veículo</span><span>Status</span><span>Valor</span></div>
-        {[
-          ["#0184", "Carlos · Civic Touring", "Em execução", "R$ 1.840"],
-          ["#0183", "Patrícia · Renegade", "Aguardando aprovação", "R$ 920"],
-          ["#0182", "Rafael · Corolla", "Em diagnóstico", "—"],
-          ["#0181", "Juliana · HB20", "Pronta", "R$ 680"],
-        ].map((row) => <div className="table-row" key={row[0]}>{row.map((cell, i) => <span className={i === 2 ? "status-pill" : ""} key={cell}>{cell}</span>)}</div>)}
-      </div>
-    );
-  }
-
-  if (module === "financeiro") {
-    return (
-      <div className="finance-preview">
-        <div className="finance-card"><span>Saldo previsto</span><strong>R$ 28.450</strong><small>Próximos 30 dias</small></div>
-        <div className="finance-card"><span>A receber</span><strong>R$ 17.280</strong><small>12 lançamentos</small></div>
-        <div className="finance-card"><span>A pagar</span><strong>R$ 8.630</strong><small>9 lançamentos</small></div>
-        <div className="cash-flow">
-          <span>Fluxo de caixa</span>
-          <svg viewBox="0 0 560 170" role="img" aria-label="Gráfico ilustrativo de fluxo de caixa">
-            <defs><linearGradient id="area" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#1d4ed8" stopOpacity=".28"/><stop offset="1" stopColor="#1d4ed8" stopOpacity="0"/></linearGradient></defs>
-            <path d="M0 138C48 130 62 85 110 97s67 4 104-22 69 20 108 4 52-60 98-46 70 15 140-22V170H0Z" fill="url(#area)"/>
-            <path d="M0 138C48 130 62 85 110 97s67 4 104-22 69 20 108 4 52-60 98-46 70 15 140-22" fill="none" stroke="#1d4ed8" strokeWidth="4" strokeLinecap="round"/>
-          </svg>
-        </div>
-      </div>
-    );
-  }
-
-  if (module === "estoque") {
-    return (
-      <div className="stock-preview">
-        <div className="module-toolbar"><strong>Estoque</strong><button type="button" tabIndex={-1}>Adicionar item</button></div>
-        <div className="stock-stats"><div><span>Itens cadastrados</span><strong>286</strong></div><div><span>Estoque crítico</span><strong>5</strong></div><div><span>Fornecedores</span><strong>18</strong></div></div>
-        {[
-          ["Filtro de óleo 0W20", "2 un.", "Crítico"],
-          ["Pastilha de freio dianteira", "6 un.", "Regular"],
-          ["Óleo sintético 5W30", "24 un.", "Disponível"],
-        ].map(([name, count, status]) => <div className="stock-row" key={name}><span><i />{name}</span><b>{count}</b><em>{status}</em></div>)}
-      </div>
-    );
-  }
-
-  return <DashboardPreview compact />;
-}
-
 function App() {
-  const [activeModule, setActiveModule] = useState("painel");
-  const [activeDirection, setActiveDirection] = useState(0);
-  const [directionPaused, setDirectionPaused] = useState(false);
+  const [activeModule, setActiveModule] = useState("ordens");
   const [openFaq, setOpenFaq] = useState(0);
   const progressRef = useRef<HTMLDivElement>(null);
-  const [reduceMotion, setReduceMotion] = useState(false);
   const activeCopy = moduleScreens.find((item) => item.id === activeModule) ?? moduleScreens[0];
-  const activeStep = directionSteps[activeDirection];
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateMotionPreference = () => setReduceMotion(media.matches);
-    updateMotionPreference();
-    media.addEventListener("change", updateMotionPreference);
-
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
     const observer = new IntersectionObserver(
       (entries) => {
@@ -477,18 +666,16 @@ function App() {
       observer.disconnect();
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", updateProgress);
-      media.removeEventListener("change", updateMotionPreference);
     };
   }, []);
 
+  // Carrega as telas das outras abas depois da página, para a troca de aba não piscar.
   useEffect(() => {
-    if (directionPaused || reduceMotion) return;
-    const interval = window.setInterval(
-      () => setActiveDirection((current) => (current + 1) % directionSteps.length),
-      5200,
-    );
-    return () => window.clearInterval(interval);
-  }, [activeDirection, directionPaused, reduceMotion]);
+    const preload = () => moduleScreens.forEach(({ image }) => { new Image().src = image; });
+    if (document.readyState === "complete") preload();
+    else window.addEventListener("load", preload, { once: true });
+    return () => window.removeEventListener("load", preload);
+  }, []);
 
   return (
     <>
@@ -503,144 +690,90 @@ function App() {
           <div className="direction-trails" aria-hidden="true"><i /><i /><i /></div>
           <div className="shell hero-grid">
             <div className="hero-copy">
-              <div className="eyebrow"><Icon name="spark" size={16} /> A direção certa para a sua oficina</div>
-              <h1>Direção para a gestão. <span>Ritmo para a oficina.</span></h1>
+              <div className="eyebrow"><Icon name="spark" size={16} /> Sistema para oficina mecânica</div>
+              <h1>O sistema que mostra <span>o próximo passo.</span></h1>
               <p>
-                A Auttra conecta a rotina inteira para mostrar onde sua operação está, o que pede atenção e qual é o próximo passo.
+                Ordem de serviço, orçamento, agenda, estoque e financeiro da oficina num só lugar, no computador e no celular, sem instalar nada.
               </p>
               <div className="hero-actions">
                 <DemoLink>Quero conhecer a Auttra <Icon name="arrow" size={18} /></DemoLink>
-                <a className="text-link" href="#produto">Ver a plataforma <span aria-hidden="true">↓</span></a>
+                {whatsappUrl
+                  ? <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
+                  : <a className="text-link" href="#produto">Ver a plataforma <span aria-hidden="true">↓</span></a>}
               </div>
               <div className="hero-notes">
-                <span><Icon name="check" size={17} /> Próximo passo mais claro</span>
-                <span><Icon name="check" size={17} /> Todos os setores alinhados</span>
+                <span><Icon name="check" size={17} /> Orçamento em PDF direto no WhatsApp</span>
+                <span><Icon name="check" size={17} /> Avisos do que precisa de atenção</span>
               </div>
             </div>
-            <div
-              className="hero-product"
-              aria-label="Demonstração visual do painel Auttra"
-              onPointerMove={tiltElement}
-              onPointerLeave={resetTilt}
-            >
-              <div className="browser-bar"><i /><i /><i /><span>app.auttra.com.br</span></div>
-              <DashboardPreview />
+            <div className="hero-product" onPointerMove={tiltElement} onPointerLeave={resetTilt}>
+              <div className="browser-bar" aria-hidden="true"><i /><i /><i /><span>app.auttra.com.br</span></div>
+              <picture>
+                <source media="(max-width: 620px)" srcSet={mobilePainelScreen} />
+                <img
+                  className="screen-shot hero-shot"
+                  src={painelScreen}
+                  alt="Tela inicial da Auttra com faturamento do mês, recebimentos, contas a pagar, pendências que precisam de atenção e a agenda do dia"
+                  width={2400}
+                  height={1500}
+                  fetchPriority="high"
+                  decoding="async"
+                />
+              </picture>
             </div>
           </div>
         </section>
 
-        <section className="connected-strip" aria-label="Áreas conectadas pela Auttra">
-          <div className="marquee-track">
-            {[0, 1].map((group) => (
-              <div className="marquee-group" aria-hidden={group === 1} key={group}>
-                <strong>Uma direção. Todos os setores alinhados.</strong>
-                {marqueeItems.map((item) => <b key={`${group}-${item}`}><span>→</span>{item}</b>)}
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="trust-foundation shell" aria-labelledby="trust-title" data-reveal="up">
-          <div className="trust-intro">
-            <span className="section-label">Base para operar com confiança</span>
-            <h2 id="trust-title">A rotina centralizada, com acesso do jeito certo.</h2>
-          </div>
-          <div className="trust-points">
-            <article>
-              <span><Icon name="spark" size={19} /></span>
-              <div><h3>Acesso pelo navegador</h3><p>Entre na plataforma sem instalar programas no computador da oficina.</p></div>
-            </article>
-            <article>
-              <span><Icon name="shield" size={19} /></span>
-              <div><h3>Perfis de acesso</h3><p>Organize o que cada função pode consultar e alterar na rotina.</p></div>
-            </article>
-            <article>
-              <span><Icon name="chart" size={19} /></span>
-              <div><h3>Visão conectada</h3><p>Acompanhe operação e gestão sem espalhar a informação por várias ferramentas.</p></div>
-            </article>
-          </div>
-        </section>
-
-        <section id="direcao" className="direction-system section" onPointerMove={moveSpotlight}>
+        <section id="comparativo" className="comparison-section section">
           <div className="shell">
-            <div className="direction-heading" data-reveal="up">
-              <span className="section-label">O sistema de direção da Auttra</span>
-              <h2>Menos telas para consultar. Mais clareza para agir.</h2>
-              <p>Sua oficina já produz os sinais. A Auttra conecta cada um deles e transforma rotina em direção.</p>
+            <div className="comparison-heading" data-reveal="up">
+              <span className="section-label">O problema que a Auttra organiza</span>
+              <h2>Da informação espalhada para uma rotina sob controle.</h2>
+              <p>Não é apenas trocar papel por tela. É deixar de reconstruir a operação toda vez que uma decisão precisa ser tomada.</p>
             </div>
-
-            <div
-              className="direction-experience"
-              data-paused={directionPaused}
-              data-reveal="scale"
-              onMouseEnter={() => setDirectionPaused(true)}
-              onMouseLeave={() => setDirectionPaused(false)}
-              onFocusCapture={() => setDirectionPaused(true)}
-              onBlurCapture={() => setDirectionPaused(false)}
-            >
-              <div className="direction-tabs" role="tablist" aria-label="Como a Auttra orienta a gestão">
-                {directionSteps.map((step, index) => (
-                  <button
-                    type="button"
-                    role="tab"
-                    aria-selected={activeDirection === index}
-                    aria-controls={`direction-panel-${step.id}`}
-                    id={`direction-tab-${step.id}`}
-                    tabIndex={activeDirection === index ? 0 : -1}
-                    className={activeDirection === index ? "active" : ""}
-                    onClick={() => setActiveDirection(index)}
-                    onKeyDown={(event) => moveTabFocus(
-                      event,
-                      index,
-                      directionSteps.map((item) => item.id),
-                      setActiveDirection,
-                      "direction-tab-",
-                    )}
-                    key={step.id}
-                  >
-                    <span>{step.number}</span>
-                    <b>{step.label}</b>
-                    <i aria-hidden="true" />
-                  </button>
-                ))}
-              </div>
-
-              <div
-                className="direction-stage"
-                id={`direction-panel-${activeStep.id}`}
-                role="tabpanel"
-                aria-labelledby={`direction-tab-${activeStep.id}`}
-              >
-                <div className="direction-copy" key={`${activeStep.id}-copy`}>
-                  <span>{activeStep.kicker}</span>
-                  <h3>{activeStep.title}</h3>
-                  <p>{activeStep.text}</p>
-                  <DemoLink className="inline-demo dark-link">Ver funcionando <Icon name="arrow" size={17} /></DemoLink>
-                </div>
-
-                <div className={`direction-visual step-${activeStep.id}`} key={activeStep.id}>
-                  <div className="direction-visual-top">
-                    <span>Auttra · Direção do dia</span>
-                    <b>Dados ilustrativos</b>
-                  </div>
-                  <div className="signal-orbit" aria-hidden="true"><i /><i /><i /></div>
-                  <div className="direction-core">
-                    <div className="core-mark"><Icon name="arrow" size={21} /></div>
-                    <span>{activeStep.label}</span>
-                  </div>
-                  <div className="direction-items">
-                    {activeStep.items.map((item, index) => (
-                      <div style={revealDelay(index)} key={item}>
-                        <span>{String(index + 1).padStart(2, "0")}</span>
-                        <p>{item}</p>
-                        <Icon name="arrow" size={16} />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+            <div className="comparison-grid">
+              {comparisonColumns.map((column, columnIndex) => (
+                <article className={`comparison-card ${column.tone}`} data-reveal="up" style={revealDelay(columnIndex)} key={column.tone}>
+                  <span className="comparison-label">{column.label}</span>
+                  <h3>{column.title}</h3>
+                  <ul>
+                    {column.items.map((item) => <li key={item}><Icon name={column.tone === "before" ? "close" : "check"} size={17} />{item}</li>)}
+                  </ul>
+                </article>
+              ))}
             </div>
           </div>
+        </section>
+
+        <section id="atencao" className="attention-section section">
+          <div className="shell attention-layout">
+            <div className="attention-copy" data-reveal="up">
+              <span className="section-label">Como funciona</span>
+              <h2>Abra o sistema e veja o que precisa de você hoje.</h2>
+              <p>A tela inicial junta os sinais que a oficina já produz e mostra só o que pede ação. Cada aviso abre a lista certa para resolver.</p>
+              <DemoLink>Ver funcionando <Icon name="arrow" size={18} /></DemoLink>
+            </div>
+            <figure className="attention-shot" data-reveal="scale">
+              <img
+                src={atencaoScreen}
+                alt="Quadro Precisa de atenção da Auttra: O.S. paradas, conta vencida, orçamentos sem resposta, estoque crítico e conta a pagar amanhã"
+                width={1090}
+                height={530}
+                loading="lazy"
+                decoding="async"
+              />
+              <figcaption>Tela inicial da Auttra, com dados de exemplo.</figcaption>
+            </figure>
+          </div>
+          <ol className="shell attention-list">
+            {attentionAlerts.map(([title, text], index) => (
+              <li data-reveal="up" style={revealDelay(index)} key={title}>
+                <span>{String(index + 1).padStart(2, "0")}</span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </li>
+            ))}
+          </ol>
         </section>
 
         <section id="produto" className="product-section section" onPointerMove={moveSpotlight}>
@@ -648,9 +781,9 @@ function App() {
             <div className="product-heading" data-reveal="up">
               <div>
                 <span className="section-label light">O produto em ação</span>
-                <h2>Informação que aponta o próximo passo.</h2>
+                <h2>As telas que a sua equipe usa todo dia.</h2>
               </div>
-              <p>Explore alguns dos fluxos que já fazem parte da plataforma.</p>
+              <p>Telas reais da plataforma. Só os dados são de exemplo.</p>
             </div>
 
             <div className="module-tabs" role="tablist" aria-label="Módulos da plataforma" data-reveal="up">
@@ -692,18 +825,92 @@ function App() {
                 <DemoLink className="inline-demo">Ver em uma demonstração <Icon name="arrow" size={17} /></DemoLink>
               </div>
               <div className="product-window" key={`${activeModule}-window`}>
-                <div className="window-top"><i /><i /><i /><small>Dados ilustrativos</small></div>
-                <ModulePreview module={activeModule} />
+                <div className="window-top" aria-hidden="true"><i /><i /><i /><small>Dados de exemplo</small></div>
+                <img
+                  className="screen-shot"
+                  src={activeCopy.image}
+                  alt={activeCopy.alt}
+                  width={1800}
+                  height={1125}
+                  decoding="async"
+                />
               </div>
             </div>
+          </div>
+        </section>
+
+        <section id="recursos" className="features-section section shell">
+          <div className="features-heading" data-reveal="up">
+            <span className="section-label">Recursos</span>
+            <h2>O que a Auttra já faz pela sua oficina.</h2>
+          </div>
+          <ul className="feature-list">
+            {features.map((feature, index) => (
+              <li data-reveal="up" style={revealDelay(index % 2)} key={feature.title}>
+                <span><Icon name={feature.icon} size={20} /></span>
+                <div>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.text}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <section id="mobile" className="mobile-section section">
+          <div className="shell mobile-layout">
+            <div className="mobile-copy" data-reveal="up">
+              <span className="section-label">No celular</span>
+              <h2>A oficina também acompanha você no celular.</h2>
+              <p>Consulte o que precisa de atenção, a agenda e as ordens de serviço de onde estiver, ao longo do dia.</p>
+              <ul>
+                <li><Icon name="check" size={18} /><span><b>Sem instalar nada</b> Abre no navegador do celular, com a mesma conta.</span></li>
+                <li><Icon name="check" size={18} /><span><b>Visão rápida</b> Faturamento, contas e pendências logo na primeira tela.</span></li>
+                <li><Icon name="check" size={18} /><span><b>Mesmos dados</b> O que a recepção lança no computador aparece na hora.</span></li>
+              </ul>
+              <DemoLink>Ver no celular na demonstração <Icon name="arrow" size={18} /></DemoLink>
+              <small>Tela real da Auttra no navegador do celular, com dados de exemplo.</small>
+            </div>
+            <div className="mobile-visual" data-reveal="scale"><MobilePreview /></div>
+          </div>
+        </section>
+
+        <section className="decision-section section shell">
+          <div className="decision-heading" data-reveal="up">
+            <span className="section-label">Como começar</span>
+            <h2>Uma demonstração com a cara da sua oficina.</h2>
+            <p>Em vez de uma apresentação genérica, a conversa segue a rotina da sua oficina e termina com valores e próximos passos claros.</p>
+          </div>
+          <div className="decision-layout">
+            <div className="demo-steps" data-reveal="up">
+              {demoSteps.map(([number, title, text]) => (
+                <article key={number}>
+                  <span>{number}</span>
+                  <div><h3>{title}</h3><p>{text}</p></div>
+                </article>
+              ))}
+            </div>
+            <aside className="offer-card" data-reveal="scale">
+              <span>O que você vê na demonstração</span>
+              <h3>Uma conversa guiada pela sua rotina.</h3>
+              <ul>
+                <li><Icon name="check" size={17} /> O caminho do carro: orçamento, O.S. e recebimento</li>
+                <li><Icon name="check" size={17} /> Os avisos de atenção com a sua realidade</li>
+                <li><Icon name="check" size={17} /> Os relatórios que fazem sentido para o seu tamanho</li>
+                <li><Icon name="check" size={17} /> Como a equipe acessa: proprietário, recepção e mecânico</li>
+                <li><Icon name="check" size={17} /> Valores, implantação e regras de contrato</li>
+              </ul>
+              <DemoLink className="button button-primary">Solicitar demonstração <Icon name="arrow" size={17} /></DemoLink>
+              <small>Sem compromisso de contratação.</small>
+            </aside>
           </div>
         </section>
 
         <section id="duvidas" className="section faq-section shell">
           <div className="faq-heading" data-reveal="up">
             <span className="section-label">Dúvidas frequentes</span>
-            <h2>O que você precisa saber para seguir em frente.</h2>
-            <p>Ainda ficou alguma dúvida? O time pode apresentar a plataforma considerando a rotina da sua oficina.</p>
+            <h2>O que as oficinas perguntam antes de começar.</h2>
+            <p>Ficou alguma dúvida? Fale com o time e veja a Auttra com a rotina da sua oficina.</p>
           </div>
           <div className="faq-list" data-reveal="up">
             {faqs.map((faq, index) => (
@@ -723,24 +930,27 @@ function App() {
           </div>
         </section>
 
-        <section className="final-cta shell" data-reveal="scale">
+        <section id="demonstracao" className="final-cta lead-section shell" data-reveal="scale">
           <div className="cta-orbit orbit-one" />
           <div className="cta-orbit orbit-two" />
-          <div className="cta-content">
-            <span><Icon name="spark" size={16} /> Próximo passo</span>
+          <div className="lead-copy">
+            <span><Icon name="spark" size={16} /> Demonstração</span>
             <h2>Sua oficina já está em movimento. Coloque a gestão na direção certa.</h2>
-            <p>Conheça a Auttra por dentro e veja como dar mais clareza ao próximo passo da sua operação.</p>
-            <div>
-              <DemoLink className="button button-light">Quero uma demonstração <Icon name="arrow" size={18} /></DemoLink>
-              <a className="button button-ghost-light" href={appUrl} target="_blank" rel="noreferrer">Já sou cliente</a>
-            </div>
+            <p>Conte um pouco sobre a oficina. Ao enviar, o WhatsApp abre com tudo preenchido para combinar a demonstração.</p>
+            <ul>
+              <li><Icon name="check" size={17} /> Demonstração com a rotina da sua oficina</li>
+              <li><Icon name="check" size={17} /> Sem compromisso de contratação</li>
+              <li><Icon name="check" size={17} /> Retorno pelo WhatsApp</li>
+            </ul>
+            <WhatsappLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere conversar agora? Chamar no WhatsApp</WhatsappLink>
           </div>
+          <DemoForm />
         </section>
       </main>
 
       <footer>
         <div className="shell footer-main">
-          <div><img src={logo} alt="Auttra" /><p>Direção para a gestão da sua oficina.</p></div>
+          <div><img src={logo} alt="Auttra" /><p>Sistema de gestão para oficina mecânica.</p><a className="footer-email" href="mailto:contato@auttra.com.br">contato@auttra.com.br</a></div>
           <nav aria-label="Navegação do rodapé">
             {navigation.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
           </nav>
@@ -748,9 +958,19 @@ function App() {
         </div>
         <div className="shell footer-bottom">
           <span>© {new Date().getFullYear()} Auttra. Todos os direitos reservados.</span>
-          <a href={appUrl} target="_blank" rel="noreferrer">app.auttra.com.br</a>
+          <nav aria-label="Links legais">
+            <a href="/privacidade/">Privacidade</a>
+            <a href="/termos/">Termos de uso</a>
+            <button type="button" onClick={() => window.dispatchEvent(new Event("auttra:cookie-settings"))}>Cookies</button>
+          </nav>
         </div>
       </footer>
+      {whatsappUrl && (
+        <a className="whatsapp-float" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Conversar com a Auttra pelo WhatsApp" onClick={() => trackEvent("whatsapp_click", { placement: "float" })}>
+          <Icon name="message" size={24} /><span>Falar no WhatsApp</span>
+        </a>
+      )}
+      <CookieConsent />
     </>
   );
 }
