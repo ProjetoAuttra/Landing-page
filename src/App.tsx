@@ -9,6 +9,8 @@ import {
   type ReactNode,
 } from "react";
 import logo from "./assets/auttra-logo.svg";
+import oficinaDesktop from "./assets/hero/oficina-desktop.webp";
+import oficinaMobile from "./assets/hero/oficina-mobile.webp";
 import agendaScreen from "./assets/screens/agenda.webp";
 import atencaoScreen from "./assets/screens/atencao.webp";
 import estoqueScreen from "./assets/screens/estoque.webp";
@@ -684,6 +686,10 @@ function App() {
       <div className="scroll-progress" ref={progressRef} aria-hidden="true" />
       <main id="inicio" tabIndex={-1}>
         <section className="hero">
+          <picture className="hero-photo" aria-hidden="true">
+            <source media="(max-width: 620px)" srcSet={oficinaMobile} />
+            <img src={oficinaDesktop} alt="" width={1920} height={1280} decoding="async" />
+          </picture>
           <div className="hero-glow glow-one" aria-hidden="true" />
           <div className="hero-glow glow-two" aria-hidden="true" />
           <div className="hero-ribbon" aria-hidden="true"><i /><i /><i /></div>

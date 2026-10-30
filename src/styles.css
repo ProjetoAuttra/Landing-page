@@ -178,6 +178,16 @@ button, a { -webkit-tap-highlight-color: transparent; }
   pointer-events: none;
 }
 
+.hero-photo {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 900px;
+  pointer-events: none;
+  mask-image: linear-gradient(180deg, black 0 40%, transparent 92%);
+  animation: hero-photo-in 1.4s ease-out both;
+}
+.hero-photo img { width: 100%; height: 100%; object-fit: cover; object-position: center 45%; opacity: .22; filter: saturate(.85); }
+
 .hero-glow { position: absolute; border-radius: 50%; filter: blur(4px); pointer-events: none; }
 .glow-one { width: 540px; height: 540px; top: -260px; right: -120px; background: radial-gradient(circle, rgba(96,165,250,.21), transparent 69%); }
 .glow-two { width: 440px; height: 440px; bottom: -260px; left: 18%; background: radial-gradient(circle, rgba(29,78,216,.12), transparent 70%); }
@@ -609,6 +619,8 @@ footer { color: white; background: #061025; }
   .section { padding-top: 84px; padding-bottom: 84px; }
   .hero { padding: 114px 0 74px; }
   .hero h1 { font-size: clamp(40px, 12vw, 54px); }
+  .hero-photo { height: 760px; }
+  .hero-photo img { object-position: center 30%; }
   .eyebrow { max-width: 100%; justify-content: center; font-size: 10px; letter-spacing: .09em; }
   .hero-actions { flex-direction: column; gap: 18px; }
   .hero-actions .button { width: 100%; }
@@ -664,6 +676,7 @@ footer { color: white; background: #061025; }
 }
 
 @keyframes hero-copy-in { from { opacity: 0; transform: translateY(22px); } }
+@keyframes hero-photo-in { from { opacity: 0; transform: scale(1.04); } }
 @keyframes hero-enter { from { opacity: 0; transform: perspective(1600px) rotateX(7deg) translateY(42px) scale(.96); } }
 @keyframes product-float {
   0%, 100% { transform: perspective(1600px) rotateX(calc(2deg + var(--tilt-x))) rotateY(var(--tilt-y)) translateY(0); }
