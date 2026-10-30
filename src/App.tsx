@@ -42,8 +42,7 @@ type IconName =
   | "shield"
   | "spark"
   | "users"
-  | "wallet"
-  | "wrench";
+  | "wallet";
 
 function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
   const paths: Record<IconName, ReactNode> = {
@@ -106,7 +105,6 @@ function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
         <path d="M15 12h5v4h-5a2 2 0 0 1 0-4Z" />
       </>
     ),
-    wrench: <path d="M14.5 6.5a4.5 4.5 0 0 0-6 5.8L3 17.8 6.2 21l5.5-5.5a4.5 4.5 0 0 0 5.8-6L15 12l-3-3Z" />,
   };
 
   return (

@@ -151,8 +151,6 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .button-primary:hover { background: var(--blue-dark); box-shadow: 0 16px 34px rgba(29, 78, 216, 0.26); }
 .button-light { color: var(--blue); background: white; box-shadow: 0 14px 36px rgba(4, 17, 43, 0.16); }
 .button-light:hover { background: #f4f7ff; }
-.button-ghost-light { color: white; border-color: rgba(255,255,255,.25); background: rgba(255,255,255,.07); }
-.button-ghost-light:hover { border-color: rgba(255,255,255,.46); background: rgba(255,255,255,.12); }
 .button-whatsapp { color: white; background: #128c4f; box-shadow: 0 12px 28px rgba(18,140,79,.22); }
 .button-whatsapp:hover { background: #0f7442; }
 
@@ -479,11 +477,8 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .cta-orbit { position: absolute; border: 1px solid rgba(111,151,244,.18); border-radius: 50%; }
 .orbit-one { width: 640px; height: 640px; left: -260px; top: -90px; }
 .orbit-two { width: 520px; height: 520px; right: -190px; bottom: -280px; }
-.cta-content { position: relative; z-index: 1; width: min(800px, calc(100% - 44px)); padding: 60px 0; text-align: center; }
-.cta-content > span { display: inline-flex; align-items: center; gap: 8px; color: #9eb9fa; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 .final-cta h2 { margin-inline: auto; }
 .final-cta p { max-width: 610px; margin: 22px auto 0; color: #b8c5d9; font-size: 17px; line-height: 1.65; }
-.cta-content > div { display: flex; justify-content: center; gap: 12px; margin-top: 32px; }
 
 .lead-section {
   min-height: 650px;
@@ -648,7 +643,6 @@ footer { color: white; background: #061025; }
   .offer-card { padding: 28px 20px; border-radius: 18px; }
   .faq-list button { min-height: 80px; font-size: 15px; }
   .final-cta { width: calc(100% - 28px); min-height: 520px; border-radius: 20px; }
-  .cta-content > div { align-items: stretch; flex-direction: column; }
   .lead-section { gap: 30px; padding: 38px 18px 18px; }
   .lead-copy { padding-inline: 8px; }
   .lead-copy h2 { font-size: 36px; }
