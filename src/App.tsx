@@ -9,8 +9,6 @@ import {
   type ReactNode,
 } from "react";
 import logo from "./assets/auttra-logo.svg";
-import oficinaDesktop from "./assets/hero/oficina-desktop.webp";
-import oficinaMobile from "./assets/hero/oficina-mobile.webp";
 import agendaScreen from "./assets/screens/agenda.webp";
 import atencaoScreen from "./assets/screens/atencao.webp";
 import estoqueScreen from "./assets/screens/estoque.webp";
@@ -19,6 +17,8 @@ import mobilePainelScreen from "./assets/screens/mobile-painel.webp";
 import orcamentosScreen from "./assets/screens/orcamentos.webp";
 import ordensScreen from "./assets/screens/ordens.webp";
 import painelScreen from "./assets/screens/painel.webp";
+import painelScreen1200 from "./assets/screens/painel-1200.webp";
+import painelScreen1800 from "./assets/screens/painel-1800.webp";
 
 const appUrl = import.meta.env.VITE_APP_URL?.trim() || "https://app.auttra.com.br";
 const formEndpoint = import.meta.env.VITE_FORM_ENDPOINT?.trim() || "";
@@ -256,15 +256,25 @@ const moduleScreens = [
 const comparisonColumns = [
   {
     tone: "before",
-    label: "Quando a informação fica espalhada",
-    title: "A equipe trabalha, mas a gestão precisa reconstruir o contexto.",
-    items: ["Consultar mensagens e controles separados", "Descobrir atrasos depois que viram urgência", "Tomar decisões com uma visão parcial da operação"],
+    label: "Como é hoje em muita oficina",
+    title: "Você só descobre quando o cliente liga reclamando.",
+    items: [
+      "O carro fica parado dias e ninguém lembra de avisar o cliente",
+      "O cliente deve e a cobrança só sai quando o caixa aperta",
+      "O orçamento fica sem resposta e o serviço vai para outra oficina",
+      "A peça acaba no meio do serviço e o carro espera",
+    ],
   },
   {
     tone: "after",
-    label: "Com a rotina conectada",
-    title: "A operação mostra onde está e o que precisa acontecer agora.",
-    items: ["Acompanhar ordens, agenda, estoque e financeiro", "Visualizar pendências que pedem atenção", "Preservar histórico para decidir com mais contexto"],
+    label: "Com a Auttra",
+    title: "Você abre a tela inicial e já sabe o que resolver.",
+    items: [
+      "Aviso de O.S. parada há mais de 5 dias",
+      "Total que os clientes devem, com as contas vencidas",
+      "Orçamentos sem resposta, na hora certa de ligar",
+      "Alerta de estoque baixo antes de faltar a peça",
+    ],
   },
 ];
 
@@ -278,24 +288,49 @@ function revealDelay(index: number): CSSProperties {
   return { "--reveal-delay": `${index * 90}ms` } as CSSProperties;
 }
 
+// Efeitos de mouse: no máximo uma escrita por quadro, e só em quem tem mouse de verdade.
+const pendingFrames = new WeakMap<HTMLElement, number>();
+
+function onNextFrame(element: HTMLElement, write: () => void) {
+  cancelAnimationFrame(pendingFrames.get(element) ?? 0);
+  pendingFrames.set(element, requestAnimationFrame(write));
+}
+
+function hasFinePointer(event: PointerEvent<HTMLElement>) {
+  return event.pointerType === "mouse" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 function tiltElement(event: PointerEvent<HTMLElement>) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const rect = event.currentTarget.getBoundingClientRect();
+  if (!hasFinePointer(event)) return;
+  const element = event.currentTarget;
+  const rect = element.getBoundingClientRect();
   const x = (event.clientX - rect.left) / rect.width - 0.5;
   const y = (event.clientY - rect.top) / rect.height - 0.5;
-  event.currentTarget.style.setProperty("--tilt-x", `${y * -4}deg`);
-  event.currentTarget.style.setProperty("--tilt-y", `${x * 6}deg`);
+  onNextFrame(element, () => {
+    element.style.setProperty("--tilt-x", `${y * -4}deg`);
+    element.style.setProperty("--tilt-y", `${x * 6}deg`);
+  });
 }
 
 function resetTilt(event: PointerEvent<HTMLElement>) {
-  event.currentTarget.style.setProperty("--tilt-x", "0deg");
-  event.currentTarget.style.setProperty("--tilt-y", "0deg");
+  const element = event.currentTarget;
+  onNextFrame(element, () => {
+    element.style.setProperty("--tilt-x", "0deg");
+    element.style.setProperty("--tilt-y", "0deg");
+  });
 }
 
+// Move o brilho com transform (só composição, sem repintar a seção inteira).
 function moveSpotlight(event: PointerEvent<HTMLElement>) {
-  const rect = event.currentTarget.getBoundingClientRect();
-  event.currentTarget.style.setProperty("--spot-x", `${event.clientX - rect.left}px`);
-  event.currentTarget.style.setProperty("--spot-y", `${event.clientY - rect.top}px`);
+  if (!hasFinePointer(event)) return;
+  const element = event.currentTarget;
+  const rect = element.getBoundingClientRect();
+  const x = event.clientX - rect.left - rect.width * 0.7;
+  const y = event.clientY - rect.top - rect.height * 0.2;
+  onNextFrame(element, () => {
+    element.style.setProperty("--spot-dx", `${x}px`);
+    element.style.setProperty("--spot-dy", `${y}px`);
+  });
 }
 
 function moveTabFocus(
@@ -510,14 +545,14 @@ function DemoForm() {
             minLength={14}
             placeholder="(11) 99999-9999"
             value={phone}
-            onChange={(event) => setPhone(formatPhone(event.target.value))}
+            onChange={(event) => setPhone(formatPhone(event.currentTarget.value))}
           />
         </label>
         <label><span>Nome da oficina</span><input name="oficina" autoComplete="organization" required placeholder="Sua oficina" /></label>
         <label>
           <span>Quantos mecânicos?</span>
-          <select name="mecanicos" required defaultValue="">
-            <option value="" disabled>Selecione</option>
+          <select name="mecanicos" required>
+            <option value="" disabled selected>Selecione</option>
             <option>Só eu</option>
             <option>2 a 3</option>
             <option>4 a 6</option>
@@ -669,12 +704,21 @@ function App() {
     };
   }, []);
 
-  // Carrega as telas das outras abas depois da página, para a troca de aba não piscar.
+  // Carrega as telas das outras abas só quando a seção de produto se aproxima da tela,
+  // para a troca de aba não piscar sem gastar dados de quem nem chega até ela.
   useEffect(() => {
-    const preload = () => moduleScreens.forEach(({ image }) => { new Image().src = image; });
-    if (document.readyState === "complete") preload();
-    else window.addEventListener("load", preload, { once: true });
-    return () => window.removeEventListener("load", preload);
+    const section = document.getElementById("produto");
+    if (!section) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (!entries.some((entry) => entry.isIntersecting)) return;
+        observer.disconnect();
+        moduleScreens.forEach(({ image }) => { new Image().src = image; });
+      },
+      { rootMargin: "600px 0px" },
+    );
+    observer.observe(section);
+    return () => observer.disconnect();
   }, []);
 
   return (
@@ -684,20 +728,15 @@ function App() {
       <div className="scroll-progress" ref={progressRef} aria-hidden="true" />
       <main id="inicio" tabIndex={-1}>
         <section className="hero">
-          <picture className="hero-photo" aria-hidden="true">
-            <source media="(max-width: 620px)" srcSet={oficinaMobile} />
-            <img src={oficinaDesktop} alt="" width={1920} height={1280} decoding="async" />
-          </picture>
           <div className="hero-glow glow-one" aria-hidden="true" />
           <div className="hero-glow glow-two" aria-hidden="true" />
           <div className="hero-ribbon" aria-hidden="true"><i /><i /><i /></div>
           <div className="direction-trails" aria-hidden="true"><i /><i /><i /></div>
           <div className="shell hero-grid">
             <div className="hero-copy">
-              <div className="eyebrow"><Icon name="spark" size={16} /> Sistema para oficina mecânica</div>
-              <h1>O sistema que mostra <span>o próximo passo.</span></h1>
+              <h1>Sistema para oficina que avisa <span>o que precisa de atenção.</span></h1>
               <p>
-                Ordem de serviço, orçamento, agenda, estoque e financeiro da oficina num só lugar, no computador e no celular, sem instalar nada.
+                Carro parado, cliente devendo, peça acabando: a Auttra mostra na tela inicial antes de virar prejuízo. Com ordem de serviço, orçamento, agenda, estoque e financeiro num só lugar, no computador e no celular.
               </p>
               <div className="hero-actions">
                 <DemoLink>Quero conhecer a Auttra <Icon name="arrow" size={18} /></DemoLink>
@@ -716,7 +755,9 @@ function App() {
                 <source media="(max-width: 620px)" srcSet={mobilePainelScreen} />
                 <img
                   className="screen-shot hero-shot"
-                  src={painelScreen}
+                  src={painelScreen1200}
+                  srcSet={`${painelScreen1200} 1200w, ${painelScreen1800} 1800w, ${painelScreen} 2400w`}
+                  sizes="(max-width: 860px) calc(100vw - 32px), min(1240px, calc(100vw - 48px))"
                   alt="Tela inicial da Auttra com faturamento do mês, recebimentos, contas a pagar, pendências que precisam de atenção e a agenda do dia"
                   width={2400}
                   height={1500}
@@ -731,9 +772,9 @@ function App() {
         <section id="comparativo" className="comparison-section section">
           <div className="shell">
             <div className="comparison-heading" data-reveal="up">
-              <span className="section-label">O problema que a Auttra organiza</span>
-              <h2>Da informação espalhada para uma rotina sob controle.</h2>
-              <p>Não é apenas trocar papel por tela. É deixar de reconstruir a operação toda vez que uma decisão precisa ser tomada.</p>
+              <span className="section-label">Por que mudar</span>
+              <h2>Carro esquecido no pátio, cliente devendo, peça que acabou no meio do serviço.</h2>
+              <p>Quase todo prejuízo de oficina começa em algo que ninguém viu a tempo. A Auttra põe isso na sua frente assim que você abre o sistema.</p>
             </div>
             <div className="comparison-grid">
               {comparisonColumns.map((column, columnIndex) => (
