@@ -71,9 +71,17 @@ function faqMarkdown(faqs: Faq[]) {
 
 function pageMarkdown(page: ContentPage) {
   const lines = [`## ${page.h1.replace(/\.$/, "")}`, "", `URL: ${absoluteUrl(page.path)}`, "", markdown(page.lead), ""];
-  if (page.highlights?.length) {
-    lines.push(`### ${page.highlightsHeading ?? "Destaques"}`, "");
-    page.highlights.forEach((item) => lines.push(`- **${item.title}**: ${item.text}`));
+  if (page.alert) {
+    lines.push(`### Aviso na tela inicial: ${page.alert.title.replace(/\.$/, "")}`, "", page.alert.text, "");
+  }
+  if (page.flow) {
+    lines.push(`### ${page.flow.heading}`, "");
+    page.flow.steps.forEach((step, index) => lines.push(`${index + 1}. **${step.title}**: ${markdown(step.text)}`));
+    lines.push("");
+  }
+  if (page.extras) {
+    lines.push(`### ${page.extras.heading}`, "");
+    page.extras.items.forEach((item) => lines.push(`- **${item.title}**: ${item.text}`));
     lines.push("");
   }
   page.sections.forEach((section) => {
@@ -83,8 +91,12 @@ function pageMarkdown(page: ContentPage) {
       section.items.forEach((item, index) => lines.push(`${section.ordered ? `${index + 1}.` : "-"} ${markdown(item)}`));
       lines.push("");
     }
+    section.groups?.forEach((group) => {
+      lines.push(`**${group.title}**`, "", ...group.items.map((item) => `- ${markdown(item)}`), "");
+    });
     section.closing?.forEach((paragraph) => lines.push(markdown(paragraph), ""));
   });
+  page.sources?.forEach((source) => lines.push(`Fonte: [${source.label}](${source.href})`, ""));
   lines.push("### Perguntas frequentes", "", ...faqMarkdown(page.faqs));
   return lines;
 }

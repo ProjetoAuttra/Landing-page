@@ -1,10 +1,24 @@
+import { useEffect, useRef, type CSSProperties } from "react";
 import agendaScreen from "../assets/screens/agenda.webp";
 import estoqueScreen from "../assets/screens/estoque.webp";
 import financeiroScreen from "../assets/screens/financeiro.webp";
 import orcamentosScreen from "../assets/screens/orcamentos.webp";
 import ordensScreen from "../assets/screens/ordens.webp";
+import { AlertPanel } from "../components/AlertPanel";
+import { DemoForm } from "../components/DemoForm";
 import { DemoLink, Icon, RichText, WhatsappLink } from "../components/Shared";
-import { contentPages, guidePages, guidesHub, type ContentPage as Page, type Faq, type ScreenKey } from "../site/pages";
+import { featureLinks } from "../site/links";
+import {
+  contentPages,
+  guidePages,
+  guidesHub,
+  sectionId,
+  type ContentPage as Page,
+  type Faq,
+  type FlowStep,
+  type ScreenKey,
+  type Section,
+} from "../site/pages";
 
 const screens: Record<ScreenKey, string> = {
   agenda: agendaScreen,
@@ -32,31 +46,127 @@ function Breadcrumb({ items }: { items: { name: string; path?: string }[] }) {
   );
 }
 
-export function PageFaq({ faqs }: { faqs: Faq[] }) {
+function FlowShot({ step }: { step: FlowStep }) {
+  const style = { "--x": `-${step.crop.x}%`, "--y": `-${step.crop.y}%`, "--zoom": step.crop.zoom ?? 1.9 } as CSSProperties;
   return (
-    <section className="page-faq" aria-labelledby="page-faq-title">
-      <h2 id="page-faq-title">Perguntas frequentes</h2>
-      {faqs.map((faq, index) => (
-        <details key={faq.question} open={index === 0}>
-          <summary>{faq.question}<b aria-hidden="true" /></summary>
-          <p><RichText text={faq.answer} /></p>
-        </details>
-      ))}
+    <div className="flow-shot" style={style}>
+      <img src={screens[step.screen]} alt={step.alt} width={1800} height={1125} loading="lazy" decoding="async" />
+    </div>
+  );
+}
+
+function Flow({ flow }: { flow: NonNullable<Page["flow"]> }) {
+  return (
+    <section className="flow shell" aria-labelledby="flow-title">
+      <h2 id="flow-title">{flow.heading}</h2>
+      <ol>
+        {flow.steps.map((step) => (
+          <li key={step.title}>
+            <div className="flow-copy">
+              <h3>{step.title}</h3>
+              <p><RichText text={step.text} /></p>
+            </div>
+            <FlowShot step={step} />
+          </li>
+        ))}
+      </ol>
+      <p className="flow-note">Recortes de telas reais da Auttra, com dados de exemplo.</p>
     </section>
   );
 }
 
-export function PageCta() {
+function SectionBody({ section }: { section: Section }) {
+  const List = section.ordered ? "ol" : "ul";
   return (
-    <section className="page-cta shell">
-      <div>
-        <span className="section-label light">Demonstração</span>
-        <h2>Veja a Auttra com a rotina da sua oficina.</h2>
-        <p>A demonstração segue o caminho do carro na sua oficina, do orçamento ao recebimento, e termina com valores e próximos passos claros.</p>
+    <>
+      {section.paragraphs?.map((text) => <p key={text}><RichText text={text} /></p>)}
+      {section.figure === "os-anatomy" && <OsAnatomy />}
+      {section.items && <List>{section.items.map((item) => <li key={item}><RichText text={item} /></li>)}</List>}
+      {section.groups && (
+        <div className="prose-groups">
+          {section.groups.map((group) => (
+            <div key={group.title}>
+              <h3>{group.title}</h3>
+              <ul>{group.items.map((item) => <li key={item}><RichText text={item} /></li>)}</ul>
+            </div>
+          ))}
+        </div>
+      )}
+      {section.closing?.map((text) => <p key={text}><RichText text={text} /></p>)}
+      {section.aside && (
+        <aside className="prose-aside">
+          <p>{section.aside.text}</p>
+          <a href={section.aside.link.href}>{section.aside.link.label} <Icon name="arrow" size={16} /></a>
+        </aside>
+      )}
+    </>
+  );
+}
+
+// Modelo de O.S. preenchido, com os mesmos dados de exemplo das telas do site.
+function OsAnatomy() {
+  return (
+    <figure className="os-doc">
+      <div className="os-doc-head">
+        <div><strong>Oficina Central</strong><span>Ordem de serviço nº 9431</span></div>
+        <em>Exemplo</em>
       </div>
-      <div className="page-cta-actions">
-        <DemoLink className="button button-light">Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
-        <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
+      <div className="os-block">
+        <span className="os-mark" aria-hidden="true">1</span>
+        <h3>Quem</h3>
+        <dl>
+          <div><dt>Cliente</dt><dd>Rodrigo Almeida · (11) 99999-9999</dd></div>
+        </dl>
+      </div>
+      <div className="os-block">
+        <span className="os-mark" aria-hidden="true">2</span>
+        <h3>O carro</h3>
+        <dl>
+          <div><dt>Veículo</dt><dd>VW Polo 2021 · RTA4F21 · 48.210 km</dd></div>
+          <div><dt>Relato</dt><dd>“Barulho ao frear e o pedal está baixo.”</dd></div>
+          <div><dt>Diagnóstico</dt><dd>Pastilhas e discos dianteiros no limite.</dd></div>
+        </dl>
+      </div>
+      <div className="os-block">
+        <span className="os-mark" aria-hidden="true">3</span>
+        <h3>O serviço</h3>
+        <table>
+          <tbody>
+            <tr><td>Troca de pastilhas e discos dianteiros</td><td>mão de obra</td><td>R$ 280,00</td></tr>
+            <tr><td>Pastilha dianteira (jogo) · nova</td><td>1 un.</td><td>R$ 245,00</td></tr>
+            <tr><td>Disco de freio dianteiro · novo</td><td>2 un.</td><td>R$ 340,00</td></tr>
+            <tr><td>Fluido de freio DOT4</td><td>3 un.</td><td>R$ 96,00</td></tr>
+          </tbody>
+        </table>
+        <dl>
+          <div><dt>Responsável</dt><dd>Carlos Souza · entrada 03/11 · entrega prevista 05/11</dd></div>
+        </dl>
+      </div>
+      <div className="os-block">
+        <span className="os-mark" aria-hidden="true">4</span>
+        <h3>O acordo</h3>
+        <dl>
+          <div><dt>Total</dt><dd><strong>R$ 961,00</strong> · PIX na entrega</dd></div>
+          <div><dt>Garantia</dt><dd>90 dias para o serviço</dd></div>
+          <div><dt>Autorização</dt><dd>Aprovado pelo cliente no WhatsApp em 03/11, às 10h12</dd></div>
+        </dl>
+      </div>
+      <figcaption>Modelo de ordem de serviço com dados de exemplo. Os números ligam cada bloco à lista abaixo.</figcaption>
+    </figure>
+  );
+}
+
+function PageFaq({ faqs }: { faqs: Faq[] }) {
+  return (
+    <section className="page-faq" id="duvidas" aria-labelledby="page-faq-title">
+      <h2 id="page-faq-title">Perguntas frequentes</h2>
+      <div>
+        {faqs.map((faq) => (
+          <details key={faq.question}>
+            <summary>{faq.question}<b aria-hidden="true" /></summary>
+            <p><RichText text={faq.answer} /></p>
+          </details>
+        ))}
       </div>
     </section>
   );
@@ -67,7 +177,7 @@ function RelatedLinks({ paths }: { paths: string[] }) {
   if (!pages.length) return null;
   return (
     <section className="page-related shell" aria-labelledby="page-related-title">
-      <h2 id="page-related-title">Continue lendo</h2>
+      <h2 id="page-related-title">Veja também</h2>
       <ul>
         {pages.map((page) => (
           <li key={page.path}>
@@ -84,82 +194,172 @@ function RelatedLinks({ paths }: { paths: string[] }) {
   );
 }
 
-export function ContentPage({ page }: { page: Page }) {
-  const trail = page.kind === "guia"
-    ? [{ name: "Início", path: "/" }, { name: guidesHub.name, path: guidesHub.path }, { name: page.name }]
-    : [{ name: "Início", path: "/" }, { name: page.name }];
-
+// Fechamento com o formulário na própria página: quem chegou pela busca não é mandado para outra.
+function LeadSection({ source }: { source: string }) {
   return (
-    <main id="inicio" tabIndex={-1} className={`content-page content-${page.kind}`}>
+    <section id="demonstracao" className="final-cta lead-section page-lead-section shell">
+      <div className="lead-copy">
+        <h2>Veja a Auttra com a rotina da sua oficina.</h2>
+        <p>Conte um pouco sobre a oficina. Ao enviar, o WhatsApp abre com tudo preenchido para combinar a demonstração.</p>
+        <ul>
+          <li><Icon name="check" size={17} /> A demonstração segue o caminho do carro na sua oficina</li>
+          <li><Icon name="check" size={17} /> O valor é apresentado na demonstração, com implantação e treinamento</li>
+          <li><Icon name="check" size={17} /> Sem compromisso de contratação</li>
+        </ul>
+        <WhatsappLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere conversar agora? Chamar no WhatsApp</WhatsappLink>
+      </div>
+      <DemoForm source={source} compact />
+    </section>
+  );
+}
+
+function Sources({ sources }: { sources: NonNullable<Page["sources"]> }) {
+  return (
+    <p className="page-sources">
+      Fonte{sources.length > 1 ? "s" : ""}:{" "}
+      {sources.map((source, index) => (
+        <span key={source.href}>{index > 0 && " · "}<a href={source.href} target="_blank" rel="noreferrer">{source.label}</a></span>
+      ))}
+    </p>
+  );
+}
+
+function FeaturePage({ page }: { page: Page }) {
+  return (
+    <main id="inicio" tabIndex={-1} className="content-page content-recurso">
       <header className="page-hero">
-        <div className="shell">
-          <Breadcrumb items={trail} />
-          <span className="section-label">{page.eyebrow}</span>
-          <h1>{page.h1}</h1>
-          <p className="page-lead">{page.lead}</p>
-          {page.kind === "guia"
-            ? <p className="page-meta">Por Auttra · Atualizado em <time dateTime={page.updated}>{formatDate(page.updated)}</time></p>
-            : (
-              <div className="page-actions">
-                <DemoLink>Quero conhecer a Auttra <Icon name="arrow" size={18} /></DemoLink>
-                <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
+        <div className="direction-trails" aria-hidden="true"><i /><i /><i /></div>
+        <div className="shell page-hero-grid">
+          <div className="page-hero-copy">
+            <Breadcrumb items={[{ name: "Início", path: "/" }, { name: page.name }]} />
+            <h1>{page.h1}</h1>
+            <p className="page-lead">{page.lead}</p>
+            <div className="page-actions">
+              <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
+              <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
+            </div>
+          </div>
+          {page.alert && (
+            <div className="page-hero-alert">
+              <AlertPanel row={page.alert.row} />
+              <div className="alert-copy">
+                <h2>{page.alert.title}</h2>
+                <p>{page.alert.text}</p>
               </div>
-            )}
-          {page.image && (
-            <figure className="page-shot">
-              <div className="window-top" aria-hidden="true"><i /><i /><i /></div>
-              <img className="screen-shot" src={screens[page.image.key]} alt={page.image.alt} width={1800} height={1125} decoding="async" />
-              <figcaption>Tela real da Auttra, com dados de exemplo.</figcaption>
-            </figure>
+            </div>
           )}
         </div>
       </header>
 
-      {page.highlights && (
-        <section className="page-points shell" aria-labelledby="page-points-title">
-          <h2 id="page-points-title">{page.highlightsHeading}</h2>
+      {page.flow && <Flow flow={page.flow} />}
+
+      {page.extras && (
+        <section className="page-extras shell" aria-labelledby="page-extras-title">
+          <h2 id="page-extras-title">{page.extras.heading}</h2>
           <ul>
-            {page.highlights.map((item) => (
-              <li key={item.title}>
-                <Icon name="check" size={18} />
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </li>
+            {page.extras.items.map((item) => (
+              <li key={item.title}><h3>{item.title}</h3><p>{item.text}</p></li>
             ))}
           </ul>
         </section>
       )}
 
-      <div className="page-body shell">
-        <article className="page-article">
-          {page.sections.map((section) => {
-            const List = section.ordered ? "ol" : "ul";
-            return (
-              <section key={section.heading}>
-                <h2>{section.heading}</h2>
-                {section.paragraphs?.map((text) => <p key={text}><RichText text={text} /></p>)}
-                {section.items && <List>{section.items.map((item) => <li key={item}><RichText text={item} /></li>)}</List>}
-                {section.closing?.map((text) => <p key={text}><RichText text={text} /></p>)}
-              </section>
-            );
-          })}
+      <div className="page-prose shell">
+        {page.sections.map((section) => (
+          <section key={section.heading}>
+            <h2>{section.heading}</h2>
+            <div className="prose"><SectionBody section={section} /></div>
+          </section>
+        ))}
+        {page.sources && <Sources sources={page.sources} />}
+        <PageFaq faqs={page.faqs} />
+      </div>
+
+      <RelatedLinks paths={page.related} />
+      <LeadSection source={page.name} />
+    </main>
+  );
+}
+
+function ReadingProgress() {
+  const bar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        const available = document.documentElement.scrollHeight - window.innerHeight;
+        bar.current?.style.setProperty("--page-progress", `${available > 0 ? Math.min(1, window.scrollY / available) : 0}`);
+      });
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", update);
+    };
+  }, []);
+  return <div className="scroll-progress" ref={bar} aria-hidden="true" />;
+}
+
+function GuideArticle({ page }: { page: Page }) {
+  const toc = [...page.sections.map((section) => ({ id: sectionId(section.heading), label: section.heading })), { id: "duvidas", label: "Perguntas frequentes" }];
+  const tocLinks = toc.map((item) => <li key={item.id}><a href={`#${item.id}`}>{item.label}</a></li>);
+
+  return (
+    <main id="inicio" tabIndex={-1} className="content-page content-guia">
+      <ReadingProgress />
+      <header className="page-hero guide-hero">
+        <div className="shell">
+          <Breadcrumb items={[{ name: "Início", path: "/" }, { name: guidesHub.name, path: guidesHub.path }, { name: page.name }]} />
+          <h1>{page.h1}</h1>
+          <p className="page-lead">{page.lead}</p>
+          <p className="page-meta">
+            Equipe Auttra · Atualizado em <time dateTime={page.updated}>{formatDate(page.updated)}</time>
+          </p>
+        </div>
+      </header>
+
+      <div className="guide-layout shell">
+        <aside className="guide-toc" aria-label="Neste guia">
+          <details className="guide-toc-mobile">
+            <summary>Neste guia<b aria-hidden="true" /></summary>
+            <ol>{tocLinks}</ol>
+          </details>
+          <div className="guide-toc-rail">
+            <strong>Neste guia</strong>
+            <ol>{tocLinks}</ol>
+          </div>
+        </aside>
+        <article className="guide-article prose">
+          {page.sections.map((section) => (
+            <section key={section.heading} id={sectionId(section.heading)}>
+              <h2>{section.heading}</h2>
+              <SectionBody section={section} />
+            </section>
+          ))}
+          {page.sources && <Sources sources={page.sources} />}
           <PageFaq faqs={page.faqs} />
         </article>
       </div>
 
       <RelatedLinks paths={page.related} />
-      <PageCta />
+      <LeadSection source={page.name} />
     </main>
   );
 }
 
+export function ContentPage({ page }: { page: Page }) {
+  return page.kind === "guia" ? <GuideArticle page={page} /> : <FeaturePage page={page} />;
+}
+
 export function GuidesPage() {
+  const features = featureLinks.map((link) => contentPages.find((page) => page.path === link.path)).filter((page): page is Page => Boolean(page));
   return (
     <main id="inicio" tabIndex={-1} className="content-page">
-      <header className="page-hero">
+      <header className="page-hero guide-hero">
         <div className="shell">
           <Breadcrumb items={[{ name: "Início", path: "/" }, { name: guidesHub.name }]} />
-          <span className="section-label">{guidesHub.eyebrow}</span>
           <h1>{guidesHub.h1}</h1>
           <p className="page-lead">{guidesHub.lead}</p>
         </div>
@@ -169,8 +369,8 @@ export function GuidesPage() {
           {guidePages.map((page) => (
             <li key={page.path}>
               <a href={page.path}>
-                <span>Guia · {formatDate(page.updated)}</span>
-                <strong>{page.name}</strong>
+                <span>Guia</span>
+                <strong>{page.h1.replace(/\.$/, "")}</strong>
                 <small>{page.description}</small>
                 <Icon name="arrow" size={18} />
               </a>
@@ -178,7 +378,18 @@ export function GuidesPage() {
           ))}
         </ul>
       </section>
-      <PageCta />
+      <section className="page-extras hub-features shell" aria-labelledby="hub-features-title">
+        <h2 id="hub-features-title">Como a Auttra resolve cada parte</h2>
+        <ul>
+          {features.map((page) => (
+            <li key={page.path}>
+              <h3><a href={page.path}>{page.name}</a></h3>
+              <p>{page.description}</p>
+            </li>
+          ))}
+        </ul>
+      </section>
+      <LeadSection source={guidesHub.name} />
     </main>
   );
 }

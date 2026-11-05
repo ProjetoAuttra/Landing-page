@@ -5,17 +5,43 @@ import { APP_URL_DEFAULT, CONTACT_EMAIL } from "../site/config";
 import { featureLinks, guideLinks, guidesHubLink } from "../site/links";
 
 export const appUrl = import.meta.env.VITE_APP_URL?.trim() || APP_URL_DEFAULT;
-export const whatsappUrl =
-  import.meta.env.VITE_WHATSAPP_URL?.trim() ||
-  `https://wa.me/5548991268901?text=${encodeURIComponent("Olá! Vim pelo site e quero conhecer a Auttra.")}`;
+const customWhatsappUrl = import.meta.env.VITE_WHATSAPP_URL?.trim() || "";
+const WHATSAPP_BASE = "https://wa.me/5548991268901";
+
+// Link do WhatsApp comercial. Nas páginas de conteúdo a mensagem já diz o que a pessoa estava lendo,
+// para o atendimento não começar do zero. Um link próprio em VITE_WHATSAPP_URL é usado como está.
+export function whatsappHref(topic?: string) {
+  if (customWhatsappUrl) return customWhatsappUrl;
+  const text = topic
+    ? `Olá! Vim pela página "${topic}" do site e quero conhecer a Auttra.`
+    : "Olá! Vim pelo site e quero conhecer a Auttra.";
+  return `${WHATSAPP_BASE}?text=${encodeURIComponent(text)}`;
+}
+
+export const whatsappUrl = whatsappHref();
+
+// WhatsApp com a pergunta sobre um recurso específico já escrita (botões "Saiba mais" da página inicial).
+export function whatsappAboutHref(subject: string) {
+  if (customWhatsappUrl) return customWhatsappUrl;
+  return `${WHATSAPP_BASE}?text=${encodeURIComponent(`Olá! Vim pelo site e quero saber mais sobre ${subject} na Auttra.`)}`;
+}
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
 
-// Na página inicial os links de seção são âncoras (#demonstracao), para não recarregar
-// a página e não perder os parâmetros de campanha. Nas outras páginas apontam para "/#...".
-const OnHomeContext = createContext(true);
+type PageContextValue = {
+  /** Página inicial: os links de seção são âncoras, para não recarregar nem perder os parâmetros de campanha. */
+  onHome: boolean;
+  /** Nome da página de conteúdo, levado para a mensagem do WhatsApp. */
+  topic?: string;
+  /** Seção do menu em que a página está. */
+  current?: "recursos" | "guias";
+  /** A página tem perguntas frequentes próprias (#duvidas). */
+  hasFaq?: boolean;
+};
+
+const PageContext = createContext<PageContextValue>({ onHome: true });
 
 export function useSectionHref() {
-  const onHome = useContext(OnHomeContext);
+  const { onHome } = useContext(PageContext);
   return (hash: string) => (onHome ? hash : `/${hash}`);
 }
 
@@ -131,7 +157,6 @@ export function RichText({ text }: { text: string }) {
 }
 
 export const navigation = [
-  ["Por que mudar", "#comparativo"],
   ["Como funciona", "#atencao"],
   ["Produto", "#produto"],
   ["Recursos", "#recursos"],
@@ -144,19 +169,19 @@ export function trackEvent(name: string, params: Record<string, string> = {}) {
   (window as TrackingWindow).gtag?.("event", name, { source: "landing_page", page: window.location.pathname, ...params });
 }
 
+// Toda página tem o formulário de demonstração (#demonstracao), então o link é sempre local.
 export function DemoLink({ children, className = "button button-primary" }: { children: ReactNode; className?: string }) {
-  const sectionHref = useSectionHref();
   return (
-    <a href={sectionHref("#demonstracao")} className={className} onClick={() => trackEvent("demo_click")}>
+    <a href="#demonstracao" className={className} onClick={() => trackEvent("demo_click")}>
       {children}
     </a>
   );
 }
 
 export function WhatsappLink({ children, className = "button button-whatsapp" }: { children: ReactNode; className?: string }) {
-  if (!whatsappUrl) return null;
+  const { topic } = useContext(PageContext);
   return (
-    <a href={whatsappUrl} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click")}>
+    <a href={whatsappHref(topic)} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click")}>
       {children}
     </a>
   );
@@ -236,7 +261,16 @@ function Header() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const sectionHref = useSectionHref();
-  const onHome = useContext(OnHomeContext);
+  const { onHome, current, hasFaq } = useContext(PageContext);
+  // Fora da página inicial, o menu leva às seções do site, não às da página inicial.
+  const items: [string, string, boolean][] = onHome
+    ? navigation.map(([label, href]) => [label, href, false])
+    : [
+        ["Início", "/", false],
+        ["Recursos", "/#recursos", current === "recursos"],
+        ["Guias", guidesHubLink.path, current === "guias"],
+        ["Dúvidas", hasFaq ? "#duvidas" : "/#duvidas", false],
+      ];
 
   useEffect(() => {
     const updateHeader = () => setScrolled(window.scrollY > 18);
@@ -264,15 +298,15 @@ function Header() {
         </a>
 
         <nav id="primary-navigation" className={open ? "main-nav is-open" : "main-nav"} aria-label="Navegação principal">
-          {navigation.map(([label, href]) => (
-            <a href={sectionHref(href)} key={href} onClick={() => setOpen(false)}>
+          {items.map(([label, href, active]) => (
+            <a href={onHome ? sectionHref(href) : href} key={label} aria-current={active ? "page" : undefined} onClick={() => setOpen(false)}>
               {label}
             </a>
           ))}
           <a className="nav-login" href={appUrl} target="_blank" rel="noreferrer">
             Acessar plataforma
           </a>
-          <DemoLink className="button button-primary nav-cta">Quero conhecer</DemoLink>
+          <DemoLink className="button button-primary nav-cta">Solicitar demonstração</DemoLink>
         </nav>
 
         <button
@@ -295,7 +329,7 @@ function Footer() {
   return (
     <footer>
       <div className="shell footer-main">
-        <div><img src={logo} alt="Auttra" /><p>Sistema de gestão para oficina mecânica.</p><a className="footer-email" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></div>
+        <div><img src={logo} alt="Auttra" /><p className="footer-tagline">Você dirige a oficina. A Auttra mostra o caminho.</p><p>Sistema de gestão para oficina mecânica.</p><a className="footer-email" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></div>
         <nav aria-label="Navegação do rodapé">
           {navigation.map(([label, href]) => <a href={sectionHref(href)} key={href}>{label}</a>)}
         </nav>
@@ -324,20 +358,53 @@ function Footer() {
   );
 }
 
-// Moldura comum a todas as páginas: cabeçalho, rodapé, WhatsApp flutuante e consentimento.
-export function SiteChrome({ onHome, children }: { onHome: boolean; children: ReactNode }) {
+// Botão flutuante do WhatsApp: some enquanto os botões do topo ou o formulário estão na tela,
+// para não cobrir os campos nem repetir o que já está à vista.
+function WhatsappFloat() {
+  const [hidden, setHidden] = useState(true);
+
+  useEffect(() => {
+    const targets = [".hero-actions", "#demonstracao"]
+      .map((selector) => document.querySelector(selector))
+      .filter((element): element is Element => Boolean(element));
+    const visible = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => (entry.isIntersecting ? visible.add(entry.target) : visible.delete(entry.target)));
+      setHidden(visible.size > 0);
+    });
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, []);
+
   return (
-    <OnHomeContext.Provider value={onHome}>
+    <a
+      className={hidden ? "whatsapp-float is-hidden" : "whatsapp-float"}
+      href={whatsappUrl}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Conversar com a Auttra pelo WhatsApp"
+      aria-hidden={hidden}
+      tabIndex={hidden ? -1 : undefined}
+      onClick={() => trackEvent("whatsapp_click", { placement: "float" })}
+    >
+      <Icon name="message" size={24} /><span>Chamar no WhatsApp</span>
+    </a>
+  );
+}
+
+// Moldura comum a todas as páginas: cabeçalho, rodapé, WhatsApp flutuante e consentimento.
+// O botão flutuante fica só na página inicial: as páginas de conteúdo já têm o WhatsApp no topo
+// e no fim, e no celular o botão cobria o texto.
+export function SiteChrome({ children, ...page }: PageContextValue & { children: ReactNode }) {
+  const { onHome } = page;
+  return (
+    <PageContext.Provider value={page}>
       <a className="skip-link" href="#inicio">Pular para o conteúdo</a>
       <Header />
       {children}
       <Footer />
-      {whatsappUrl && (
-        <a className="whatsapp-float" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Conversar com a Auttra pelo WhatsApp" onClick={() => trackEvent("whatsapp_click", { placement: "float" })}>
-          <Icon name="message" size={24} /><span>Falar no WhatsApp</span>
-        </a>
-      )}
+      {onHome && <WhatsappFloat />}
       <CookieConsent />
-    </OnHomeContext.Provider>
+    </PageContext.Provider>
   );
 }

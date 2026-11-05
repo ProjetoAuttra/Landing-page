@@ -4,10 +4,10 @@ export const homeMeta = {
   path: "/",
   title: "Sistema para oficina mecânica | Auttra",
   description:
-    "Sistema para oficina mecânica: ordem de serviço, orçamento em PDF no WhatsApp, agenda, estoque com XML da nota, financeiro e 11 relatórios. No navegador, no computador e no celular.",
+    "Sistema para oficina mecânica que mostra o próximo passo: O.S. parada, conta vencida, orçamento sem resposta e estoque crítico na tela inicial. Peça uma demonstração.",
   socialTitle: "Auttra | Sistema para oficina mecânica",
-  socialDescription: "Centralize a rotina da oficina e veja o que precisa de atenção agora.",
-  updated: "2026-11-04",
+  socialDescription: "Você dirige a oficina. A Auttra mostra o caminho.",
+  updated: "2026-11-05",
 };
 
 // O que o sistema faz, em frases curtas. Vai para o `featureList` do schema e para o llms.txt.

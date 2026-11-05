@@ -3,63 +3,72 @@ import {
   useRef,
   useState,
   type CSSProperties,
-  type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
-  type PointerEvent,
 } from "react";
 import agendaScreen from "./assets/screens/agenda.webp";
-import atencaoScreen from "./assets/screens/atencao.webp";
 import estoqueScreen from "./assets/screens/estoque.webp";
 import financeiroScreen from "./assets/screens/financeiro.webp";
 import mobilePainelScreen from "./assets/screens/mobile-painel.webp";
 import orcamentosScreen from "./assets/screens/orcamentos.webp";
 import ordensScreen from "./assets/screens/ordens.webp";
-import painelScreen from "./assets/screens/painel.webp";
-import painelScreen1200 from "./assets/screens/painel-1200.webp";
-import painelScreen1800 from "./assets/screens/painel-1800.webp";
-import { DemoLink, Icon, SiteChrome, WhatsappLink, trackEvent, whatsappUrl, type IconName } from "./components/Shared";
+import { AlertPanel } from "./components/AlertPanel";
+import { DemoForm } from "./components/DemoForm";
+import { DemoLink, Icon, SiteChrome, WhatsappLink, trackEvent, whatsappAboutHref, whatsappHref, type IconName } from "./components/Shared";
 import { homeFaqs as faqs } from "./site/home";
 
-const formEndpoint = import.meta.env.VITE_FORM_ENDPOINT?.trim() || "";
-const schedulingUrl = import.meta.env.VITE_SCHEDULING_URL?.trim() || "";
-
-// Os mesmos avisos da tela inicial do sistema (painel.service no backend).
-const attentionAlerts = [
-  ["O.S. paradas há mais de 5 dias", "Mostra quantas são e há quanto tempo está parada a mais antiga, para nenhum carro ficar esquecido no pátio."],
-  ["Contas vencidas a receber", "Soma o que os clientes ainda devem, para a cobrança acontecer antes de virar prejuízo."],
-  ["Orçamentos sem resposta", "Separa o que está em análise há mais de 3 dias, na hora certa de ligar para o cliente."],
-  ["Estoque crítico", "Avisa quando uma peça chega a 3 unidades ou menos, antes de faltar no meio do serviço."],
-  ["Contas a pagar amanhã", "Lembra o que vence no dia seguinte, para o caixa não ser pego de surpresa."],
+// Cada dor da oficina ao lado do aviso da tela inicial que a pega (mesma ordem do quadro "Precisa de atenção").
+const attentionPairs = [
+  {
+    pain: "O carro fica parado dias e ninguém lembra de avisar o cliente.",
+    alert: "O.S. paradas há mais de 5 dias",
+    rule: "Mostra quantas são e há quanto tempo está parada a mais antiga.",
+  },
+  {
+    pain: "O cliente deve e a cobrança só sai quando o caixa aperta.",
+    alert: "Contas vencidas a receber",
+    rule: "Soma o que os clientes ainda devem, para cobrar antes de virar prejuízo.",
+  },
+  {
+    pain: "O orçamento fica sem resposta e o serviço vai para outra oficina.",
+    alert: "Orçamentos sem resposta",
+    rule: "Separa o que está em análise há mais de 3 dias, na hora certa de ligar.",
+  },
+  {
+    pain: "A peça acaba no meio do serviço e o carro espera.",
+    alert: "Estoque crítico",
+    rule: "Avisa quando uma peça chega a 3 unidades ou menos.",
+  },
+  {
+    pain: "A conta do fornecedor vence sem ninguém ver.",
+    alert: "Contas a pagar amanhã",
+    rule: "Lembra o que vence no dia seguinte, para o caixa não ser pego de surpresa.",
+  },
 ];
 
-const features: { icon: IconName; title: string; text: string; href?: string; linkLabel?: string }[] = [
+const features: { icon: IconName; title: string; text: string; whatsappTopic?: string }[] = [
   {
     icon: "message",
     title: "Orçamento no WhatsApp do cliente",
     text: "Gere o orçamento em PDF e envie pelo WhatsApp sem sair da tela. Aprovado, ele vira ordem de serviço com um clique.",
-    href: "/orcamento-oficina-whatsapp/",
-    linkLabel: "Orçamento pelo WhatsApp",
+    whatsappTopic: "o orçamento pelo WhatsApp",
   },
   {
     icon: "package",
-    title: "Estoque pela nota fiscal",
+    title: "Estoque pelo XML da nota",
     text: "Importe o XML da nota do fornecedor e as peças entram com custo e quantidade, sem digitar item por item.",
-    href: "/controle-de-estoque-oficina/",
-    linkLabel: "Controle de estoque",
+    whatsappTopic: "o controle de estoque",
   },
   {
     icon: "clipboard",
     title: "O.S. completa em PDF",
     text: "Serviços, peças, mecânico responsável e valores na mesma ordem, pronta para imprimir ou mandar para o cliente.",
-    href: "/ordem-de-servico-oficina/",
-    linkLabel: "Ordem de serviço",
+    whatsappTopic: "a ordem de serviço",
   },
   {
     icon: "wallet",
     title: "Contas a pagar e receber",
     text: "Parcelas, desconto, multa e pagamento parcial. A O.S. concluída já gera a cobrança em contas a receber.",
-    href: "/financeiro-oficina/",
-    linkLabel: "Financeiro",
+    whatsappTopic: "as contas a pagar e receber",
   },
   {
     icon: "chart",
@@ -73,132 +82,52 @@ const features: { icon: IconName; title: string; text: string; href?: string; li
   },
 ];
 
+// O tour segue o caminho do carro na oficina: do agendamento ao recebimento.
 const moduleScreens = [
-  {
-    id: "ordens",
-    label: "Ordens",
-    eyebrow: "Operação",
-    title: "Cada serviço com uma direção clara.",
-    text: "Status, cliente, veículo, mecânico, valor e pagamento de cada O.S. na mesma lista, sem procurar em mensagens soltas.",
-    image: ordensScreen,
-    alt: "Lista de ordens de serviço da Auttra com cliente, veículo, mecânico, valor, status e pagamento",
-  },
   {
     id: "agenda",
     label: "Agenda",
-    eyebrow: "Capacidade",
     title: "A semana da oficina em uma tela.",
     text: "Agendamentos por dia, com serviço, cliente e veículo, para distribuir o trabalho antes de o carro chegar.",
     image: agendaScreen,
     alt: "Agenda semanal da Auttra com os serviços agendados de cada dia",
   },
   {
-    id: "financeiro",
-    label: "Financeiro",
-    eyebrow: "Previsibilidade",
-    title: "Entenda o caminho do seu caixa.",
-    text: "Recebido, pago, saldo e o que ainda vai entrar e sair, com as entradas por semana e por forma de pagamento.",
-    image: financeiroScreen,
-    alt: "Relatório de fluxo de caixa da Auttra com entradas, saídas e recebimentos por forma de pagamento",
+    id: "orcamentos",
+    label: "Orçamentos",
+    title: "Nenhum orçamento esquecido.",
+    text: "Acompanhe o que está em análise, aprovado ou recusado e transforme o orçamento aprovado em O.S.",
+    image: orcamentosScreen,
+    alt: "Lista de orçamentos da Auttra com valores, validade e status",
+  },
+  {
+    id: "ordens",
+    label: "Ordens",
+    title: "Cada carro com status, mecânico e valor.",
+    text: "Status, cliente, veículo, mecânico, valor e pagamento de cada O.S. na mesma lista, sem procurar em mensagens soltas.",
+    image: ordensScreen,
+    alt: "Lista de ordens de serviço da Auttra com cliente, veículo, mecânico, valor, status e pagamento",
   },
   {
     id: "estoque",
     label: "Estoque",
-    eyebrow: "Antecipação",
     title: "Veja o que falta antes de parar.",
     text: "Custo, preço de venda e quantidade de cada peça, com alerta de estoque baixo e entrada pelo XML da nota.",
     image: estoqueScreen,
     alt: "Tela de estoque da Auttra com peças, custo, venda e alertas de estoque baixo",
   },
   {
-    id: "orcamentos",
-    label: "Orçamentos",
-    eyebrow: "Conversão",
-    title: "Nenhum orçamento esquecido.",
-    text: "Acompanhe o que está em análise, aprovado ou recusado e transforme o orçamento aprovado em O.S.",
-    image: orcamentosScreen,
-    alt: "Lista de orçamentos da Auttra com valores, validade e status",
+    id: "financeiro",
+    label: "Financeiro",
+    title: "O que entrou, o que saiu e o que vai entrar.",
+    text: "Recebido, pago, saldo e o previsto, com as entradas por semana e por forma de pagamento.",
+    image: financeiroScreen,
+    alt: "Relatório de fluxo de caixa da Auttra com entradas, saídas e recebimentos por forma de pagamento",
   },
-];
-
-const comparisonColumns = [
-  {
-    tone: "before",
-    label: "Como é hoje em muita oficina",
-    title: "Você só descobre quando o cliente liga reclamando.",
-    items: [
-      "O carro fica parado dias e ninguém lembra de avisar o cliente",
-      "O cliente deve e a cobrança só sai quando o caixa aperta",
-      "O orçamento fica sem resposta e o serviço vai para outra oficina",
-      "A peça acaba no meio do serviço e o carro espera",
-    ],
-  },
-  {
-    tone: "after",
-    label: "Com a Auttra",
-    title: "Você abre a tela inicial e já sabe o que resolver.",
-    items: [
-      "Aviso de O.S. parada há mais de 5 dias",
-      "Total que os clientes devem, com as contas vencidas",
-      "Orçamentos sem resposta, na hora certa de ligar",
-      "Alerta de estoque baixo antes de faltar a peça",
-    ],
-  },
-];
-
-const demoSteps = [
-  ["01", "Conte sobre a oficina", "Nome, WhatsApp e quantos mecânicos trabalham com você."],
-  ["02", "A gente entende a rotina", "Como os carros entram, como o orçamento é aprovado e onde o controle aperta hoje."],
-  ["03", "Você vê a Auttra funcionando", "A demonstração segue o caminho do carro na sua oficina, do orçamento ao recebimento."],
 ];
 
 function revealDelay(index: number): CSSProperties {
   return { "--reveal-delay": `${index * 90}ms` } as CSSProperties;
-}
-
-// Efeitos de mouse: no máximo uma escrita por quadro, e só em quem tem mouse de verdade.
-const pendingFrames = new WeakMap<HTMLElement, number>();
-
-function onNextFrame(element: HTMLElement, write: () => void) {
-  cancelAnimationFrame(pendingFrames.get(element) ?? 0);
-  pendingFrames.set(element, requestAnimationFrame(write));
-}
-
-function hasFinePointer(event: PointerEvent<HTMLElement>) {
-  return event.pointerType === "mouse" && !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-}
-
-function tiltElement(event: PointerEvent<HTMLElement>) {
-  if (!hasFinePointer(event)) return;
-  const element = event.currentTarget;
-  const rect = element.getBoundingClientRect();
-  const x = (event.clientX - rect.left) / rect.width - 0.5;
-  const y = (event.clientY - rect.top) / rect.height - 0.5;
-  onNextFrame(element, () => {
-    element.style.setProperty("--tilt-x", `${y * -4}deg`);
-    element.style.setProperty("--tilt-y", `${x * 6}deg`);
-  });
-}
-
-function resetTilt(event: PointerEvent<HTMLElement>) {
-  const element = event.currentTarget;
-  onNextFrame(element, () => {
-    element.style.setProperty("--tilt-x", "0deg");
-    element.style.setProperty("--tilt-y", "0deg");
-  });
-}
-
-// Move o brilho com transform (só composição, sem repintar a seção inteira).
-function moveSpotlight(event: PointerEvent<HTMLElement>) {
-  if (!hasFinePointer(event)) return;
-  const element = event.currentTarget;
-  const rect = element.getBoundingClientRect();
-  const x = event.clientX - rect.left - rect.width * 0.7;
-  const y = event.clientY - rect.top - rect.height * 0.2;
-  onNextFrame(element, () => {
-    element.style.setProperty("--spot-dx", `${x}px`);
-    element.style.setProperty("--spot-dy", `${y}px`);
-  });
 }
 
 function moveTabFocus(
@@ -222,145 +151,20 @@ function moveTabFocus(
   requestAnimationFrame(() => document.getElementById(`${prefix}${ids[nextIndex]}`)?.focus());
 }
 
+// O destaque do quadro percorre os avisos, um de cada vez (parado para quem pede menos movimento).
+function useAlertCycle(count: number) {
+  const [row, setRow] = useState(0);
 
-function formatPhone(value: string) {
-  const digits = value.replace(/\D/g, "").slice(0, 11);
-  if (digits.length <= 2) return digits.length ? `(${digits}` : "";
-  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
-  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = window.setInterval(() => {
+      if (!document.hidden) setRow((value) => (value + 1) % count);
+    }, 3200);
+    return () => window.clearInterval(timer);
+  }, [count]);
+
+  return { row };
 }
-
-// Origem da campanha, para saber de onde veio cada lead.
-function campaignParams() {
-  const params = new URLSearchParams(window.location.search);
-  return Object.fromEntries(
-    ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content", "gclid", "fbclid"]
-      .map((key) => [key, params.get(key) || ""])
-      .filter(([, value]) => value),
-  );
-}
-
-function DemoForm() {
-  const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
-  const [phone, setPhone] = useState("");
-
-  const submit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    const form = event.currentTarget;
-    const data = new FormData(form);
-    if (data.get("website")) return;
-
-    setStatus("loading");
-    setErrorMessage("");
-
-    const payload = {
-      nome: String(data.get("nome") || ""),
-      whatsapp: String(data.get("whatsapp") || ""),
-      oficina: String(data.get("oficina") || ""),
-      mecanicos: String(data.get("mecanicos") || ""),
-      email: String(data.get("email") || ""),
-      origem: "landing_page",
-      ...campaignParams(),
-    };
-
-    try {
-      if (formEndpoint) {
-        const response = await fetch(formEndpoint, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        if (!response.ok) throw new Error("Não foi possível enviar sua solicitação agora.");
-      } else {
-        // Sem endpoint, o lead chega pelo WhatsApp comercial com os dados já escritos.
-        const lines = [
-          "Olá! Quero conhecer a Auttra.",
-          "",
-          `Nome: ${payload.nome}`,
-          `Oficina: ${payload.oficina}`,
-          `Mecânicos: ${payload.mecanicos}`,
-          `WhatsApp: ${payload.whatsapp}`,
-        ];
-        if (payload.email) lines.push(`E-mail: ${payload.email}`);
-        const campaign = [payload.utm_source, payload.utm_medium, payload.utm_campaign].filter(Boolean).join(" / ");
-        if (campaign) lines.push(`Origem: ${campaign}`);
-
-        const url = `${whatsappUrl.split("?")[0]}?text=${encodeURIComponent(lines.join("\n"))}`;
-        // Abre antes de qualquer await para o navegador não bloquear a nova aba.
-        const opened = window.open(url, "_blank");
-        if (!opened) {
-          trackEvent("demo_form_success", { mecanicos: payload.mecanicos, channel: "whatsapp" });
-          window.location.href = url;
-          return;
-        }
-        opened.opener = null;
-      }
-
-      trackEvent("demo_form_success", { mecanicos: payload.mecanicos, channel: formEndpoint ? "endpoint" : "whatsapp" });
-      window.location.assign(formEndpoint ? "/obrigado/" : "/obrigado/?via=whatsapp");
-    } catch (error) {
-      setStatus("error");
-      setErrorMessage(error instanceof Error ? error.message : "Não foi possível enviar. Tente novamente ou fale por e-mail.");
-    }
-  };
-
-  return (
-    <form className="demo-form" onSubmit={submit}>
-      <div className="form-grid">
-        <label><span>Seu nome</span><input name="nome" autoComplete="name" required placeholder="Como podemos chamar você?" /></label>
-        <label>
-          <span>WhatsApp</span>
-          <input
-            name="whatsapp"
-            type="tel"
-            inputMode="tel"
-            autoComplete="tel"
-            required
-            minLength={14}
-            placeholder="(11) 99999-9999"
-            value={phone}
-            onChange={(event) => setPhone(formatPhone(event.currentTarget.value))}
-          />
-        </label>
-        <label><span>Nome da oficina</span><input name="oficina" autoComplete="organization" required placeholder="Sua oficina" /></label>
-        <label>
-          <span>Quantos mecânicos?</span>
-          <select name="mecanicos" required>
-            <option value="" disabled selected>Selecione</option>
-            <option>Só eu</option>
-            <option>2 a 3</option>
-            <option>4 a 6</option>
-            <option>7 ou mais</option>
-          </select>
-        </label>
-        <label className="form-wide"><span>E-mail <small>opcional</small></span><input name="email" type="email" autoComplete="email" placeholder="voce@oficina.com.br" /></label>
-      </div>
-      <label className="form-consent">
-        <input type="checkbox" required />
-        <span>Concordo em ser contatado sobre a Auttra e li a <a href="/privacidade/">Política de Privacidade</a>.</span>
-      </label>
-      <label className="form-honeypot" aria-hidden="true">Site<input name="website" tabIndex={-1} autoComplete="off" /></label>
-      {status === "error" && <p className="form-error" role="alert">{errorMessage} <a href="mailto:contato@auttra.com.br">contato@auttra.com.br</a></p>}
-      <button className="button button-light form-submit" type="submit" disabled={status === "loading"}>
-        {status === "loading"
-          ? <><span className="spinner" /> Enviando...</>
-          : formEndpoint
-            ? <>Solicitar demonstração <Icon name="arrow" size={18} /></>
-            : <><Icon name="message" size={18} /> Enviar pelo WhatsApp</>}
-      </button>
-      {schedulingUrl && <a className="form-schedule" href={schedulingUrl} target="_blank" rel="noreferrer">Prefere escolher um horário agora? <Icon name="calendar" size={15} /></a>}
-      <small className="form-assurance">
-        <Icon name="shield" size={15} />
-        {formEndpoint
-          ? "Seus dados serão usados apenas para responder a esta solicitação."
-          : "O WhatsApp abre com sua mensagem pronta. É só tocar em enviar."}
-      </small>
-    </form>
-  );
-}
-
 
 function MobilePreview() {
   return (
@@ -378,17 +182,20 @@ function MobilePreview() {
           />
         </div>
       </div>
-      <div className="mobile-float-card float-top"><Icon name="check" size={17} /><span><b>Atualização registrada</b><small>O histórico acompanha a rotina.</small></span></div>
+      <div className="mobile-float-card float-top"><Icon name="check" size={17} /><span><b>Precisa de atenção</b><small>2 O.S. paradas há mais de 5 dias</small></span></div>
       <div className="mobile-float-card float-bottom"><Icon name="phone" size={18} /><span><b>Auttra no celular</b><small>A mesma conta, onde você estiver.</small></span></div>
     </div>
   );
 }
 
 function App() {
-  const [activeModule, setActiveModule] = useState("ordens");
-  const [openFaq, setOpenFaq] = useState(0);
+  const [activeModule, setActiveModule] = useState(moduleScreens[0].id);
+  const [openFaq, setOpenFaq] = useState(-1);
   const progressRef = useRef<HTMLDivElement>(null);
   const activeCopy = moduleScreens.find((item) => item.id === activeModule) ?? moduleScreens[0];
+  const activeIndex = moduleScreens.indexOf(activeCopy);
+  const alertCycle = useAlertCycle(attentionPairs.length);
+  const activePair = attentionPairs[alertCycle.row];
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -448,110 +255,66 @@ function App() {
       <main id="inicio" tabIndex={-1}>
         <section className="hero">
           <div className="hero-glow glow-one" aria-hidden="true" />
-          <div className="hero-glow glow-two" aria-hidden="true" />
-          <div className="hero-ribbon" aria-hidden="true"><i /><i /><i /></div>
           <div className="direction-trails" aria-hidden="true"><i /><i /><i /></div>
           <div className="shell hero-grid">
             <div className="hero-copy">
-              <h1>Sistema para oficina que avisa <span>o que precisa de atenção.</span></h1>
+              <h1>Sistema para oficina que mostra <span>o próximo passo.</span></h1>
               <p>
-                Carro parado, cliente devendo, peça acabando: a Auttra mostra na tela inicial antes de virar prejuízo. Com ordem de serviço, orçamento, agenda, estoque e financeiro num só lugar, no computador e no celular.
+                Abriu a Auttra, ela já aponta: O.S. parada há mais de 5 dias, cliente com conta vencida, orçamento sem resposta, peça acabando. Cada aviso abre a lista certa para resolver, com ordem de serviço, orçamento, agenda, estoque e financeiro num só lugar.
               </p>
               <div className="hero-actions">
-                <DemoLink>Quero conhecer a Auttra <Icon name="arrow" size={18} /></DemoLink>
-                {whatsappUrl
-                  ? <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
-                  : <a className="text-link" href="#produto">Ver a plataforma <span aria-hidden="true">↓</span></a>}
-              </div>
-              <div className="hero-notes">
-                <span><Icon name="check" size={17} /> Orçamento em PDF direto no WhatsApp</span>
-                <span><Icon name="check" size={17} /> Avisos do que precisa de atenção</span>
+                <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
+                <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
               </div>
             </div>
-            <div className="hero-product" onPointerMove={tiltElement} onPointerLeave={resetTilt}>
-              <div className="browser-bar" aria-hidden="true"><i /><i /><i /><span>app.auttra.com.br</span></div>
-              <picture>
-                <source media="(max-width: 620px)" srcSet={mobilePainelScreen} />
-                <img
-                  className="screen-shot hero-shot"
-                  src={painelScreen1200}
-                  srcSet={`${painelScreen1200} 1200w, ${painelScreen1800} 1800w, ${painelScreen} 2400w`}
-                  sizes="(max-width: 860px) calc(100vw - 32px), min(1240px, calc(100vw - 48px))"
-                  alt="Tela inicial da Auttra com faturamento do mês, recebimentos, contas a pagar, pendências que precisam de atenção e a agenda do dia"
-                  width={2400}
-                  height={1500}
-                  fetchPriority="high"
-                  decoding="async"
-                />
-              </picture>
+            <div className="hero-alert">
+              <AlertPanel row={alertCycle.row} label="Hoje, comece por aqui" />
+              <p className="hero-alert-caption" aria-hidden="true" key={alertCycle.row}>
+                <b>{activePair.alert}</b> {activePair.rule}
+              </p>
             </div>
           </div>
         </section>
 
-        <section id="comparativo" className="comparison-section section">
+        <section id="atencao" className="pairs-section section">
           <div className="shell">
-            <div className="comparison-heading" data-reveal="up">
-              <span className="section-label">Por que mudar</span>
-              <h2>Carro esquecido no pátio, cliente devendo, peça que acabou no meio do serviço.</h2>
-              <p>Quase todo prejuízo de oficina começa em algo que ninguém viu a tempo. A Auttra põe isso na sua frente assim que você abre o sistema.</p>
+            <div className="pairs-heading" data-reveal="up">
+              <h2>Sem aviso, o problema só aparece quando já virou prejuízo.</h2>
+              <p>Carro esquecido no pátio, cliente devendo, peça que acabou no meio do serviço. A tela inicial da Auttra mostra cada um desses sinais a tempo, e cada aviso abre a lista certa para resolver.</p>
             </div>
-            <div className="comparison-grid">
-              {comparisonColumns.map((column, columnIndex) => (
-                <article className={`comparison-card ${column.tone}`} data-reveal="up" style={revealDelay(columnIndex)} key={column.tone}>
-                  <span className="comparison-label">{column.label}</span>
-                  <h3>{column.title}</h3>
-                  <ul>
-                    {column.items.map((item) => <li key={item}><Icon name={column.tone === "before" ? "close" : "check"} size={17} />{item}</li>)}
-                  </ul>
-                </article>
-              ))}
+            <div className="pairs-table" data-reveal="up">
+              <div className="pairs-head" aria-hidden="true">
+                <span>Como é hoje em muita oficina</span>
+                <span>O aviso da Auttra</span>
+              </div>
+              <ul>
+                {attentionPairs.map((pair, index) => (
+                  <li key={pair.alert} className={alertCycle.row === index ? "is-active" : ""}>
+                    <p className="pair-pain"><Icon name="close" size={16} /><span><span className="visually-hidden">Hoje: </span>{pair.pain}</span></p>
+                    <span className="pair-arrow" aria-hidden="true" />
+                    <p className="pair-alert">
+                      <strong><span className="visually-hidden">Aviso da Auttra: </span>{pair.alert}</strong>
+                      <span>{pair.rule}</span>
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="pairs-action" data-reveal="up">
+              <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
             </div>
           </div>
         </section>
 
-        <section id="atencao" className="attention-section section">
-          <div className="shell attention-layout">
-            <div className="attention-copy" data-reveal="up">
-              <span className="section-label">Como funciona</span>
-              <h2>Abra o sistema e veja o que precisa de você hoje.</h2>
-              <p>A tela inicial junta os sinais que a oficina já produz e mostra só o que pede ação. Cada aviso abre a lista certa para resolver.</p>
-              <DemoLink>Ver funcionando <Icon name="arrow" size={18} /></DemoLink>
-            </div>
-            <figure className="attention-shot" data-reveal="scale">
-              <img
-                src={atencaoScreen}
-                alt="Quadro Precisa de atenção da Auttra: O.S. paradas, conta vencida, orçamentos sem resposta, estoque crítico e conta a pagar amanhã"
-                width={1090}
-                height={530}
-                loading="lazy"
-                decoding="async"
-              />
-              <figcaption>Tela inicial da Auttra, com dados de exemplo.</figcaption>
-            </figure>
-          </div>
-          <ol className="shell attention-list">
-            {attentionAlerts.map(([title, text], index) => (
-              <li data-reveal="up" style={revealDelay(index)} key={title}>
-                <span>{String(index + 1).padStart(2, "0")}</span>
-                <h3>{title}</h3>
-                <p>{text}</p>
-              </li>
-            ))}
-          </ol>
-        </section>
-
-        <section id="produto" className="product-section section" onPointerMove={moveSpotlight}>
+        <section id="produto" className="product-section section">
           <div className="shell">
             <div className="product-heading" data-reveal="up">
-              <div>
-                <span className="section-label light">O produto em ação</span>
-                <h2>As telas que a sua equipe usa todo dia.</h2>
-              </div>
-              <p>Telas reais da plataforma. Só os dados são de exemplo.</p>
+              <h2>Do orçamento ao recebimento, cada etapa aponta a próxima.</h2>
+              <p>O caminho do carro, tela por tela. Telas reais da plataforma, só os dados são de exemplo.</p>
             </div>
 
-            <div className="module-tabs" role="tablist" aria-label="Módulos da plataforma" data-reveal="up">
-              {moduleScreens.map((item) => (
+            <div className="module-tabs" role="tablist" aria-label="Etapas na plataforma" data-reveal="up">
+              {moduleScreens.map((item, index) => (
                 <button
                   type="button"
                   role="tab"
@@ -563,14 +326,14 @@ function App() {
                   onClick={() => setActiveModule(item.id)}
                   onKeyDown={(event) => moveTabFocus(
                     event,
-                    moduleScreens.findIndex((module) => module.id === item.id),
+                    index,
                     moduleScreens.map((module) => module.id),
                     (nextIndex) => setActiveModule(moduleScreens[nextIndex].id),
                     "module-tab-",
                   )}
                   key={item.id}
                 >
-                  {item.label}
+                  <small aria-hidden="true">{index + 1}</small>{item.label}
                 </button>
               ))}
             </div>
@@ -583,10 +346,14 @@ function App() {
               data-reveal="scale"
             >
               <div className="product-stage-copy" key={activeCopy.id}>
-                <span>{activeCopy.eyebrow}</span>
+                <p className="product-step">Etapa {activeIndex + 1} de {moduleScreens.length}</p>
                 <h3>{activeCopy.title}</h3>
                 <p>{activeCopy.text}</p>
-                <DemoLink className="inline-demo">Ver em uma demonstração <Icon name="arrow" size={17} /></DemoLink>
+                {activeIndex < moduleScreens.length - 1 && (
+                  <button type="button" className="inline-next" onClick={() => setActiveModule(moduleScreens[activeIndex + 1].id)}>
+                    Próxima etapa: {moduleScreens[activeIndex + 1].label} <Icon name="arrow" size={17} />
+                  </button>
+                )}
               </div>
               <div className="product-window" key={`${activeModule}-window`}>
                 <div className="window-top" aria-hidden="true"><i /><i /><i /><small>Dados de exemplo</small></div>
@@ -605,7 +372,6 @@ function App() {
 
         <section id="recursos" className="features-section section shell">
           <div className="features-heading" data-reveal="up">
-            <span className="section-label">Recursos</span>
             <h2>O que a Auttra já faz pela sua oficina.</h2>
           </div>
           <ul className="feature-list">
@@ -615,7 +381,17 @@ function App() {
                 <div>
                   <h3>{feature.title}</h3>
                   <p>{feature.text}</p>
-                  {feature.href && <a className="feature-more" href={feature.href}>Saiba mais<span className="visually-hidden">: {feature.linkLabel}</span> <Icon name="arrow" size={15} /></a>}
+                  {feature.whatsappTopic && (
+                    <a
+                      className="feature-more"
+                      href={whatsappAboutHref(feature.whatsappTopic)}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackEvent("whatsapp_click", { placement: "feature", feature: feature.title })}
+                    >
+                      <Icon name="message" size={15} /> Perguntar no WhatsApp<span className="visually-hidden"> sobre {feature.whatsappTopic}</span>
+                    </a>
+                  )}
                 </div>
               </li>
             ))}
@@ -625,57 +401,28 @@ function App() {
         <section id="mobile" className="mobile-section section">
           <div className="shell mobile-layout">
             <div className="mobile-copy" data-reveal="up">
-              <span className="section-label">No celular</span>
-              <h2>A oficina também acompanha você no celular.</h2>
+              <h2>Longe da oficina, sem perder o rumo dela.</h2>
               <p>Consulte o que precisa de atenção, a agenda e as ordens de serviço de onde estiver, ao longo do dia.</p>
               <ul>
                 <li><Icon name="check" size={18} /><span><b>Sem instalar nada</b> Abre no navegador do celular, com a mesma conta.</span></li>
                 <li><Icon name="check" size={18} /><span><b>Visão rápida</b> Faturamento, contas e pendências logo na primeira tela.</span></li>
                 <li><Icon name="check" size={18} /><span><b>Mesmos dados</b> O que a recepção lança no computador aparece na hora.</span></li>
               </ul>
-              <DemoLink>Ver no celular na demonstração <Icon name="arrow" size={18} /></DemoLink>
+              <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
               <small>Tela real da Auttra no navegador do celular, com dados de exemplo.</small>
             </div>
             <div className="mobile-visual" data-reveal="scale"><MobilePreview /></div>
           </div>
         </section>
 
-        <section className="decision-section section shell">
-          <div className="decision-heading" data-reveal="up">
-            <span className="section-label">Como começar</span>
-            <h2>Uma demonstração com a cara da sua oficina.</h2>
-            <p>Em vez de uma apresentação genérica, a conversa segue a rotina da sua oficina e termina com valores e próximos passos claros.</p>
-          </div>
-          <div className="decision-layout">
-            <div className="demo-steps" data-reveal="up">
-              {demoSteps.map(([number, title, text]) => (
-                <article key={number}>
-                  <span>{number}</span>
-                  <div><h3>{title}</h3><p>{text}</p></div>
-                </article>
-              ))}
-            </div>
-            <aside className="offer-card" data-reveal="scale">
-              <span>O que você vê na demonstração</span>
-              <h3>Uma conversa guiada pela sua rotina.</h3>
-              <ul>
-                <li><Icon name="check" size={17} /> O caminho do carro: orçamento, O.S. e recebimento</li>
-                <li><Icon name="check" size={17} /> Os avisos de atenção com a sua realidade</li>
-                <li><Icon name="check" size={17} /> Os relatórios que fazem sentido para o seu tamanho</li>
-                <li><Icon name="check" size={17} /> Como a equipe acessa: proprietário, recepção e mecânico</li>
-                <li><Icon name="check" size={17} /> Valores, implantação e regras de contrato</li>
-              </ul>
-              <DemoLink className="button button-primary">Solicitar demonstração <Icon name="arrow" size={17} /></DemoLink>
-              <small>Sem compromisso de contratação.</small>
-            </aside>
-          </div>
-        </section>
-
         <section id="duvidas" className="section faq-section shell">
           <div className="faq-heading" data-reveal="up">
-            <span className="section-label">Dúvidas frequentes</span>
             <h2>O que as oficinas perguntam antes de começar.</h2>
-            <p>Ficou alguma dúvida? Fale com o time e veja a Auttra com a rotina da sua oficina.</p>
+            <p>
+              Ficou alguma dúvida?{" "}
+              <a href={whatsappHref()} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click", { placement: "faq" })}>Pergunte no WhatsApp</a>
+              {" "}e veja a Auttra com a rotina da sua oficina.
+            </p>
           </div>
           <div className="faq-list" data-reveal="up">
             {faqs.map((faq, index) => (
@@ -696,16 +443,14 @@ function App() {
         </section>
 
         <section id="demonstracao" className="final-cta lead-section shell" data-reveal="scale">
-          <div className="cta-orbit orbit-one" />
-          <div className="cta-orbit orbit-two" />
           <div className="lead-copy">
-            <span><Icon name="spark" size={16} /> Demonstração</span>
-            <h2>Sua oficina já está em movimento. Coloque a gestão na direção certa.</h2>
+            <h2>Veja o caminho da sua oficina dentro da Auttra.</h2>
             <p>Conte um pouco sobre a oficina. Ao enviar, o WhatsApp abre com tudo preenchido para combinar a demonstração.</p>
             <ul>
-              <li><Icon name="check" size={17} /> Demonstração com a rotina da sua oficina</li>
+              <li><Icon name="check" size={17} /> O caminho do carro: orçamento, O.S. e recebimento</li>
+              <li><Icon name="check" size={17} /> Os avisos de atenção com a realidade da sua oficina</li>
+              <li><Icon name="check" size={17} /> Valores, implantação e regras de contrato na conversa</li>
               <li><Icon name="check" size={17} /> Sem compromisso de contratação</li>
-              <li><Icon name="check" size={17} /> Retorno pelo WhatsApp</li>
             </ul>
             <WhatsappLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere conversar agora? Chamar no WhatsApp</WhatsappLink>
           </div>

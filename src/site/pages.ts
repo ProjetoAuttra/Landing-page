@@ -1,7 +1,7 @@
 // Conteúdo das páginas de recursos e dos guias. Os textos aceitam duas marcações:
 // [texto](/caminho/) vira link e **texto** vira negrito.
 // Regra do conteúdo: só afirmar o que o sistema faz de verdade (as mesmas
-// informações da página inicial). O que não for confirmado fica de fora.
+// informações da página inicial e do PRODUCT.md). O que não for confirmado fica de fora.
 
 import { featureLinks, guideLinks, guidesHubLink } from "./links";
 
@@ -10,35 +10,63 @@ const [escolherLink, fazerOsLink] = guideLinks;
 
 export type Faq = { question: string; answer: string };
 
+export type ScreenKey = "ordens" | "orcamentos" | "estoque" | "financeiro" | "agenda";
+
+/** Recorte ampliado de uma tela real: `x` e `y` em % da imagem, `zoom` em vezes a largura do quadro. */
+export type Crop = { x: number; y: number; zoom?: number };
+
+export type FlowStep = { title: string; text: string; screen: ScreenKey; crop: Crop; alt: string };
+
 export type Section = {
   heading: string;
   paragraphs?: string[];
   items?: string[];
   ordered?: boolean;
+  /** Lista quebrada em blocos curtos (no lugar de `items`). */
+  groups?: { title: string; items: string[] }[];
+  /** Figura de exemplo desenhada no próprio site. */
+  figure?: "os-anatomy";
   closing?: string[];
+  /** Chamada discreta para a demonstração logo depois da seção. */
+  aside?: { text: string; link: { label: string; href: string } };
 };
-
-export type ScreenKey = "ordens" | "orcamentos" | "estoque" | "financeiro" | "agenda";
 
 export type ContentPage = {
   path: string;
   kind: "recurso" | "guia";
-  /** Nome curto, usado no breadcrumb, nos links e no rodapé. */
+  /** Nome curto, usado no breadcrumb, nos links, no rodapé e na mensagem do WhatsApp. */
   name: string;
   title: string;
   description: string;
-  eyebrow: string;
   h1: string;
   lead: string;
-  image?: { key: ScreenKey; alt: string };
-  highlightsHeading?: string;
-  highlights?: { title: string; text: string }[];
+  /** Recursos: o aviso da tela inicial ligado a esta página (linha do quadro "Precisa de atenção"). */
+  alert?: { row: 0 | 1 | 2 | 3 | 4; title: string; text: string };
+  /** Recursos: o caminho da tarefa no sistema, com recortes das telas reais. */
+  flow?: { heading: string; steps: FlowStep[] };
+  /** Recursos: fatos que o caminho e o aviso não cobrem. */
+  extras?: { heading: string; items: { title: string; text: string }[] };
   sections: Section[];
   faqs: Faq[];
   related: string[];
+  sources?: { label: string; href: string }[];
   published: string;
   updated: string;
 };
+
+// Perguntas de quem está decidindo, comuns a todas as páginas de recursos.
+const buyerFaqs: Faq[] = [
+  {
+    question: "Quanto custa a Auttra?",
+    answer:
+      "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento da equipe e as regras de contrato e cancelamento.",
+  },
+  {
+    question: "Como funciona a demonstração?",
+    answer:
+      "Você conta sobre a oficina (nome, WhatsApp e quantos mecânicos), a gente entende a rotina e mostra a Auttra seguindo o caminho do carro na sua oficina, do orçamento ao recebimento. Não há compromisso de contratação.",
+  },
+];
 
 export const featurePages: ContentPage[] = [
   {
@@ -47,23 +75,40 @@ export const featurePages: ContentPage[] = [
     title: "Ordem de serviço para oficina mecânica | Auttra",
     description:
       "Ordem de serviço para oficina mecânica com serviços, peças, mecânico responsável e valores. O.S. em PDF, aviso de carro parado e cobrança gerada ao concluir.",
-    eyebrow: "Ordem de serviço",
     h1: "Ordem de serviço para oficina, do orçamento aprovado ao recebimento.",
     lead:
       "Na Auttra, cada O.S. reúne cliente, veículo, serviços, peças, mecânico responsável e valores. Ela nasce do orçamento aprovado com um clique, sai em PDF para o cliente e, quando é concluída, já vira cobrança no financeiro.",
-    image: {
-      key: "ordens",
-      alt: "Lista de ordens de serviço da Auttra com cliente, veículo, mecânico, valor, status e pagamento",
+    alert: {
+      row: 0,
+      title: "Nenhum carro esquecido no pátio.",
+      text: "Abra o sistema e a tela inicial já mostra quantas O.S. estão paradas há mais de 5 dias e há quanto tempo está parada a mais antiga. O aviso abre a lista certa para resolver.",
     },
-    highlightsHeading: "O que a O.S. da Auttra faz",
-    highlights: [
-      { title: "Nasce do orçamento", text: "O orçamento aprovado vira ordem de serviço com um clique, sem digitar tudo de novo." },
-      { title: "Tudo na mesma ordem", text: "Serviços, peças, mecânico responsável e valores no mesmo documento." },
-      { title: "PDF para o cliente", text: "A O.S. sai pronta para imprimir ou mandar para o cliente." },
-      { title: "Status de cada carro", text: "A lista mostra status, cliente, veículo, mecânico, valor e pagamento de cada O.S." },
-      { title: "Aviso de carro parado", text: "A tela inicial avisa quando há O.S. parada há mais de 5 dias e há quanto tempo está parada a mais antiga." },
-      { title: "Cobrança ao concluir", text: "A O.S. concluída gera a cobrança em contas a receber." },
-    ],
+    flow: {
+      heading: "O caminho da O.S. na Auttra",
+      steps: [
+        {
+          title: "O orçamento aprovado vira O.S.",
+          text: "Com um clique, sem digitar de novo o que já estava no [orçamento](/orcamento-oficina-whatsapp/).",
+          screen: "orcamentos",
+          crop: { x: 19, y: 7 },
+          alt: "Lista de orçamentos da Auttra com cliente, veículo, descrição e valor",
+        },
+        {
+          title: "A O.S. reúne o serviço inteiro",
+          text: "Serviços, peças, mecânico responsável e valores na mesma ordem, pronta em PDF para imprimir ou mandar ao cliente.",
+          screen: "ordens",
+          crop: { x: 19, y: 7 },
+          alt: "Lista de ordens de serviço da Auttra com número, cliente, veículo e mecânico",
+        },
+        {
+          title: "Concluída, vira cobrança",
+          text: "A lista mostra status e pagamento de cada O.S., e a concluída gera a conta a receber no [financeiro](/financeiro-oficina/).",
+          screen: "ordens",
+          crop: { x: 47, y: 47 },
+          alt: "Colunas de valor, status e pagamento das ordens de serviço da Auttra",
+        },
+      ],
+    },
     sections: [
       {
         heading: "Por que a ordem de serviço é o centro da oficina",
@@ -73,24 +118,13 @@ export const featurePages: ContentPage[] = [
         ],
       },
       {
-        heading: "Como a O.S. funciona na Auttra",
-        ordered: true,
-        items: [
-          "O cliente aprova o [orçamento](/orcamento-oficina-whatsapp/) e ele vira O.S. com um clique.",
-          "A O.S. registra os serviços, as peças, o mecânico responsável e os valores.",
-          "A equipe acompanha cada ordem na lista, com status, cliente, veículo, valor e pagamento.",
-          "Se uma O.S. fica parada por mais de 5 dias, a tela inicial avisa.",
-          "Concluída, a O.S. gera a cobrança em contas a receber, no [financeiro](/financeiro-oficina/).",
-        ],
-      },
-      {
         heading: "Cada função vê a parte dela",
         paragraphs: [
           "Os perfis de Proprietário, Recepção e Mecânico definem o que cada pessoa pode ver e alterar, e as permissões podem ser ajustadas. Cada funcionário entra com o próprio acesso, então fica claro quem fez o quê.",
         ],
       },
       {
-        heading: "O que as ordens de serviço mostram para a gestão",
+        heading: "O que as ordens mostram para a gestão",
         paragraphs: [
           "Entre os 11 relatórios de gestão da Auttra, a margem por O.S. e a produtividade por mecânico saem direto das ordens de serviço. Você vê quais serviços deixam resultado e como o trabalho está distribuído na equipe.",
           "Ainda está montando o seu modelo de O.S.? Veja o guia [como fazer ordem de serviço de oficina mecânica](/guias/como-fazer-ordem-de-servico-oficina/).",
@@ -99,26 +133,22 @@ export const featurePages: ContentPage[] = [
     ],
     faqs: [
       {
-        question: "A Auttra gera ordem de serviço em PDF?",
-        answer: "Sim. A O.S. sai em PDF com serviços, peças, mecânico responsável e valores, pronta para imprimir ou mandar para o cliente.",
-      },
-      {
         question: "Dá para transformar orçamento em ordem de serviço?",
         answer: "Sim. Quando o cliente aprova o orçamento, ele vira ordem de serviço com um clique.",
-      },
-      {
-        question: "Como sei quais carros estão parados na oficina?",
-        answer:
-          "A tela inicial mostra quantas O.S. estão paradas há mais de 5 dias e há quanto tempo está parada a mais antiga. O aviso abre a lista certa para resolver.",
       },
       {
         question: "O mecânico consegue acessar as ordens de serviço?",
         answer: "Sim. Cada pessoa tem o próprio acesso, e o perfil de Mecânico define o que ele pode ver e alterar. As permissões podem ser ajustadas.",
       },
+      {
+        question: "A Auttra gera ordem de serviço em PDF?",
+        answer: "Sim. A O.S. sai em PDF com serviços, peças, mecânico responsável e valores, pronta para imprimir ou mandar para o cliente.",
+      },
+      ...buyerFaqs,
     ],
     related: ["/orcamento-oficina-whatsapp/", "/financeiro-oficina/", "/guias/como-fazer-ordem-de-servico-oficina/"],
     published: "2026-11-04",
-    updated: "2026-11-04",
+    updated: "2026-11-05",
   },
   {
     ...orcamentoLink,
@@ -126,37 +156,46 @@ export const featurePages: ContentPage[] = [
     title: "Orçamento de oficina em PDF pelo WhatsApp | Auttra",
     description:
       "Monte o orçamento da oficina, gere o PDF e envie pelo WhatsApp do cliente sem sair da tela. Acompanhe os que estão sem resposta e transforme o aprovado em O.S.",
-    eyebrow: "Orçamento",
     h1: "Orçamento de oficina em PDF, enviado pelo WhatsApp do cliente.",
     lead:
-      "Na Auttra, o orçamento sai em PDF e vai para o WhatsApp do cliente direto da tela de orçamentos. Você acompanha o que está em análise, aprovado ou recusado, recebe aviso dos que estão sem resposta e transforma o aprovado em ordem de serviço com um clique.",
-    image: { key: "orcamentos", alt: "Lista de orçamentos da Auttra com valores, validade e status" },
-    highlightsHeading: "O que o orçamento da Auttra faz",
-    highlights: [
-      { title: "PDF para o cliente", text: "O orçamento sai em PDF, com os serviços e os valores que o cliente precisa aprovar." },
-      { title: "Direto no WhatsApp", text: "O envio para o WhatsApp do cliente sai da própria tela de orçamentos." },
-      { title: "Status e validade", text: "Em análise, aprovado ou recusado, com valor e validade na mesma lista." },
-      { title: "Aviso de sem resposta", text: "A tela inicial separa os orçamentos em análise há mais de 3 dias, na hora certa de ligar." },
-      { title: "Aprovado vira O.S.", text: "Com um clique, o orçamento aprovado vira ordem de serviço." },
-      { title: "Orçamentos perdidos", text: "Um relatório mostra os orçamentos perdidos, para entender onde a oficina deixa de fechar serviço." },
-    ],
+      "Na Auttra, o orçamento sai em PDF e vai para o WhatsApp do cliente direto da tela de orçamentos. Você acompanha o que está em análise, aprovado ou recusado e transforma o aprovado em ordem de serviço com um clique.",
+    alert: {
+      row: 2,
+      title: "Ligue para o cliente na hora certa.",
+      text: "A tela inicial separa os orçamentos em análise há mais de 3 dias. É o momento de retomar a conversa, antes de o serviço ir para outra oficina.",
+    },
+    flow: {
+      heading: "O caminho do orçamento na Auttra",
+      steps: [
+        {
+          title: "Monte e mande pelo WhatsApp",
+          text: "A recepção monta o orçamento com serviços e peças, e o PDF vai para o WhatsApp do cliente direto da tela.",
+          screen: "orcamentos",
+          crop: { x: 19, y: 7 },
+          alt: "Tela de orçamentos da Auttra com filtros por status e a lista de orçamentos",
+        },
+        {
+          title: "Acompanhe status e validade",
+          text: "Em análise, aprovado ou recusado, com a data de validade de cada orçamento na mesma lista.",
+          screen: "orcamentos",
+          crop: { x: 47, y: 22 },
+          alt: "Colunas de valor, data, validade e status dos orçamentos da Auttra",
+        },
+        {
+          title: "Aprovado vira O.S.",
+          text: "Com um clique, o orçamento aprovado vira [ordem de serviço](/ordem-de-servico-oficina/). O recusado entra no relatório de orçamentos perdidos.",
+          screen: "ordens",
+          crop: { x: 19, y: 7 },
+          alt: "Lista de ordens de serviço da Auttra",
+        },
+      ],
+    },
     sections: [
       {
         heading: "Por que mandar o orçamento pelo WhatsApp",
         paragraphs: [
           "Boa parte dos clientes de oficina já conversa pelo WhatsApp. Mandar o orçamento ali, em PDF, evita o valor passado por telefone, que o cliente esquece, e deixa registrado o que foi proposto.",
           "O problema aparece quando cada orçamento sai de um celular diferente e ninguém sabe quais ainda estão sem resposta. É aí que o serviço vai para outra oficina.",
-        ],
-      },
-      {
-        heading: "Como funciona na Auttra",
-        ordered: true,
-        items: [
-          "A recepção monta o orçamento com os serviços e as peças.",
-          "O PDF é gerado e enviado ao WhatsApp do cliente direto da tela.",
-          "O orçamento fica em análise até o cliente responder.",
-          "Passados 3 dias sem resposta, ele aparece nos avisos da tela inicial.",
-          "Aprovado, vira [ordem de serviço](/ordem-de-servico-oficina/) com um clique. Recusado, entra no relatório de orçamentos perdidos.",
         ],
       },
       {
@@ -174,22 +213,20 @@ export const featurePages: ContentPage[] = [
         answer: "Sim. Na Auttra, o orçamento sai em PDF e vai para o WhatsApp do cliente direto da tela de orçamentos.",
       },
       {
-        question: "O orçamento aprovado vira ordem de serviço?",
-        answer: "Sim. Quando o cliente aprova, o orçamento vira ordem de serviço com um clique, sem digitar de novo.",
-      },
-      {
-        question: "Como sei quais orçamentos estão sem resposta?",
-        answer: "A tela inicial separa os orçamentos em análise há mais de 3 dias, para a oficina ligar para o cliente na hora certa.",
-      },
-      {
         question: "Por quanto tempo vale um orçamento de oficina?",
         answer:
           "Pelo Código de Defesa do Consumidor (art. 40), o orçamento vale por 10 dias a partir do recebimento pelo cliente, salvo se a oficina e o cliente combinarem outro prazo. Na Auttra, a validade aparece na lista de orçamentos.",
       },
+      {
+        question: "O orçamento aprovado vira ordem de serviço?",
+        answer: "Sim. Quando o cliente aprova, o orçamento vira ordem de serviço com um clique, sem digitar de novo.",
+      },
+      ...buyerFaqs,
     ],
     related: ["/ordem-de-servico-oficina/", "/financeiro-oficina/", "/guias/como-escolher-sistema-para-oficina/"],
+    sources: [{ label: "Código de Defesa do Consumidor (Lei nº 8.078/1990)", href: "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm" }],
     published: "2026-11-04",
-    updated: "2026-11-04",
+    updated: "2026-11-05",
   },
   {
     ...estoqueLink,
@@ -197,34 +234,52 @@ export const featurePages: ContentPage[] = [
     title: "Controle de estoque para oficina mecânica | Auttra",
     description:
       "Controle de estoque de peças para oficina: entrada pelo XML da nota fiscal, custo e preço de venda de cada peça e alerta antes de faltar no meio do serviço.",
-    eyebrow: "Estoque",
     h1: "Controle de estoque para oficina, com entrada pelo XML da nota.",
     lead:
-      "Na Auttra, as peças entram no estoque pela importação do XML da nota do fornecedor, com custo e quantidade, sem digitar item por item. Cada peça mostra custo, preço de venda e quantidade, e a tela inicial avisa quando ela chega a 3 unidades ou menos.",
-    image: { key: "estoque", alt: "Tela de estoque da Auttra com peças, custo, venda e alertas de estoque baixo" },
-    highlightsHeading: "O que o estoque da Auttra faz",
-    highlights: [
-      { title: "Entrada pelo XML", text: "Importe o XML da nota do fornecedor e as peças entram com custo e quantidade." },
-      { title: "Custo e preço de venda", text: "Cada peça com custo, preço de venda e quantidade em estoque." },
-      { title: "Alerta de estoque crítico", text: "Aviso quando uma peça chega a 3 unidades ou menos, antes de faltar no meio do serviço." },
-      { title: "Fornecedores", text: "Cadastro de fornecedores junto com o estoque." },
-      { title: "Liga e desliga", text: "Estoque e fornecedores podem ser ligados ou desligados conforme a rotina da oficina." },
-    ],
+      "Na Auttra, as peças entram no estoque pela importação do XML da nota do fornecedor, com custo e quantidade, sem digitar item por item. Cada peça mostra custo, preço de venda e quantidade.",
+    alert: {
+      row: 3,
+      title: "Compre antes de faltar, não depois.",
+      text: "Quando uma peça chega a 3 unidades ou menos, a tela inicial avisa. O carro não fica parado no elevador esperando peça.",
+    },
+    flow: {
+      heading: "O caminho da peça na Auttra",
+      steps: [
+        {
+          title: "Importe o XML da nota",
+          text: "A nota do fornecedor chega e as peças entram no estoque com custo e quantidade, sem digitar item por item.",
+          screen: "estoque",
+          crop: { x: 44, y: 7 },
+          alt: "Botão Importar XML da nota na tela de estoque da Auttra, acima da lista de peças",
+        },
+        {
+          title: "Custo e venda de cada peça",
+          text: "Custo, preço de venda e quantidade lado a lado, para o preço sair do custo real e não de memória.",
+          screen: "estoque",
+          crop: { x: 20, y: 33, zoom: 1.65 },
+          alt: "Lista de peças da Auttra com custo, preço de venda e quantidade em estoque",
+        },
+        {
+          title: "Baixo estoque em destaque",
+          text: "As peças com pouca quantidade aparecem marcadas na lista, e o total de itens em baixo estoque fica no topo da tela.",
+          screen: "estoque",
+          crop: { x: 19, y: 16, zoom: 2.2 },
+          alt: "Peças marcadas com alerta de estoque baixo na Auttra",
+        },
+      ],
+    },
+    extras: {
+      heading: "Também no estoque",
+      items: [
+        { title: "Fornecedores", text: "Cadastro de fornecedores junto com o estoque." },
+        { title: "Só se fizer sentido", text: "Estoque e fornecedores podem ser ligados ou desligados conforme a rotina da oficina." },
+      ],
+    },
     sections: [
       {
         heading: "O que custa não controlar o estoque",
         paragraphs: [
           "Na oficina, a peça que falta deixa o carro parado no elevador e atrasa a entrega. A peça que sobra prende dinheiro na prateleira. E, sem saber o custo de cada peça, fica difícil dizer se o serviço deu lucro.",
-        ],
-      },
-      {
-        heading: "Como funciona na Auttra",
-        ordered: true,
-        items: [
-          "A nota do fornecedor chega e você importa o XML.",
-          "As peças entram no estoque com custo e quantidade.",
-          "Cada peça fica com custo, preço de venda e quantidade.",
-          "Quando uma peça chega a 3 unidades ou menos, a tela inicial avisa.",
         ],
       },
       {
@@ -234,7 +289,6 @@ export const featurePages: ContentPage[] = [
           "Dê entrada sempre pela nota, para o custo de cada peça ficar certo.",
           "Faça contagens periódicas e corrija as diferenças assim que aparecerem.",
           "Defina o preço de venda a partir do custo real, não do preço de memória.",
-          "Use o alerta de estoque baixo para comprar antes de faltar, e não depois.",
         ],
         closing: [
           "Com o custo certo no estoque, os relatórios do [financeiro](/financeiro-oficina/) mostram a margem de cada ordem de serviço.",
@@ -247,17 +301,14 @@ export const featurePages: ContentPage[] = [
         answer: "Sim. Importe o XML da nota do fornecedor e as peças entram no estoque com custo e quantidade.",
       },
       {
-        question: "A Auttra avisa quando uma peça está acabando?",
-        answer: "Sim. A tela inicial avisa quando uma peça chega a 3 unidades ou menos, antes de faltar no meio do serviço.",
-      },
-      {
         question: "Sou obrigado a usar o controle de estoque?",
         answer: "Não. Estoque e fornecedores podem ser ligados ou desligados conforme a rotina da oficina.",
       },
+      ...buyerFaqs,
     ],
     related: ["/ordem-de-servico-oficina/", "/financeiro-oficina/", "/guias/como-escolher-sistema-para-oficina/"],
     published: "2026-11-04",
-    updated: "2026-11-04",
+    updated: "2026-11-05",
   },
   {
     ...financeiroLink,
@@ -265,38 +316,52 @@ export const featurePages: ContentPage[] = [
     title: "Controle financeiro para oficina mecânica | Auttra",
     description:
       "Contas a pagar e receber, fluxo de caixa e 11 relatórios de gestão para oficina mecânica, com cobrança gerada pela O.S. e aviso de contas vencidas.",
-    eyebrow: "Financeiro",
     h1: "Controle financeiro para oficina, ligado às ordens de serviço.",
     lead:
-      "Na Auttra, a O.S. concluída já gera a cobrança em contas a receber. Contas a pagar e receber aceitam parcelas, desconto, multa e pagamento parcial, o fluxo de caixa mostra o que entrou, saiu e ainda vai entrar, e 11 relatórios mostram margem, produtividade e inadimplência.",
-    image: {
-      key: "financeiro",
-      alt: "Relatório de fluxo de caixa da Auttra com entradas, saídas e recebimentos por forma de pagamento",
+      "Na Auttra, a O.S. concluída já gera a cobrança em contas a receber. Contas a pagar e receber aceitam parcelas, desconto, multa e pagamento parcial, e o fluxo de caixa mostra o que entrou, saiu e ainda vai entrar.",
+    alert: {
+      row: 1,
+      title: "A cobrança sai antes de o caixa apertar.",
+      text: "A tela inicial soma as contas vencidas a receber e lembra as contas a pagar que vencem no dia seguinte, para nada ser pego de surpresa.",
     },
-    highlightsHeading: "O que o financeiro da Auttra faz",
-    highlights: [
-      { title: "Contas a pagar e receber", text: "Parcelas, desconto, multa e pagamento parcial." },
-      { title: "Cobrança pela O.S.", text: "A O.S. concluída gera a cobrança em contas a receber." },
-      { title: "Fluxo de caixa", text: "Recebido, pago, saldo e o que ainda vai entrar e sair, por semana e por forma de pagamento." },
-      { title: "Avisos de vencimento", text: "A tela inicial soma as contas vencidas a receber e lembra o que vence amanhã a pagar." },
-      { title: "Faturamento do mês", text: "Faturamento do mês com gráfico diário e os valores a receber e a pagar logo na tela inicial." },
-      { title: "11 relatórios", text: "Margem por O.S., produtividade por mecânico, inadimplência, orçamentos perdidos, fluxo de caixa, faturamento e mais." },
-    ],
+    flow: {
+      heading: "O caminho do dinheiro na Auttra",
+      steps: [
+        {
+          title: "A O.S. concluída gera a cobrança",
+          text: "Sem lançar de novo: a [ordem de serviço](/ordem-de-servico-oficina/) concluída vira conta a receber, com parcelas, desconto, multa ou pagamento parcial.",
+          screen: "ordens",
+          crop: { x: 47, y: 47 },
+          alt: "Status e pagamento das ordens de serviço na Auttra, com concluídas pagas e pendentes",
+        },
+        {
+          title: "O caixa realizado e o previsto",
+          text: "Recebido, pago, saldo, o que ainda vai entrar e o que ainda vai sair, no período que você escolher.",
+          screen: "financeiro",
+          crop: { x: 17, y: 7 },
+          alt: "Fluxo de caixa da Auttra com recebido, pago, saldo realizado, a receber e a pagar",
+        },
+        {
+          title: "Por semana e por forma de pagamento",
+          text: "Entradas e saídas por semana e o recebido separado por PIX, cartão, dinheiro e transferência.",
+          screen: "financeiro",
+          crop: { x: 47, y: 43 },
+          alt: "Gráfico do recebido por forma de pagamento na Auttra",
+        },
+      ],
+    },
+    extras: {
+      heading: "Também no financeiro",
+      items: [
+        { title: "Faturamento do mês na abertura", text: "A tela inicial mostra o faturamento do mês com gráfico diário e os valores a receber e a pagar." },
+        { title: "No celular", text: "O mesmo resumo abre no navegador do celular, com a mesma conta." },
+      ],
+    },
     sections: [
       {
         heading: "Onde o dinheiro da oficina se perde",
         paragraphs: [
           "Serviço entregue e não cobrado, cliente que ficou de pagar e esqueceu, conta do fornecedor que vence sem ninguém ver. Em muita oficina, o problema não é falta de serviço, é falta de visão do caixa.",
-        ],
-      },
-      {
-        heading: "Como funciona na Auttra",
-        ordered: true,
-        items: [
-          "A [ordem de serviço](/ordem-de-servico-oficina/) é concluída e a cobrança entra em contas a receber.",
-          "O recebimento pode ser parcelado, com desconto, multa ou pagamento parcial.",
-          "As contas a pagar ficam no mesmo lugar, com aviso do que vence no dia seguinte.",
-          "O fluxo de caixa mostra recebido, pago, saldo e o previsto, por semana e por forma de pagamento.",
         ],
       },
       {
@@ -324,17 +389,15 @@ export const featurePages: ContentPage[] = [
         answer:
           "São 11 relatórios de gestão, entre eles margem por O.S., produtividade por mecânico, inadimplência, orçamentos perdidos, fluxo de caixa e faturamento.",
       },
-      {
-        question: "Consigo ver o financeiro da oficina no celular?",
-        answer:
-          "Sim. A Auttra abre no navegador do celular com a mesma conta, e a tela inicial mostra o faturamento do mês, os valores a receber e a pagar e as pendências.",
-      },
+      ...buyerFaqs,
     ],
     related: ["/ordem-de-servico-oficina/", "/orcamento-oficina-whatsapp/", "/controle-de-estoque-oficina/"],
     published: "2026-11-04",
-    updated: "2026-11-04",
+    updated: "2026-11-05",
   },
 ];
+
+const cdcSource = { label: "Código de Defesa do Consumidor (Lei nº 8.078/1990)", href: "https://www.planalto.gov.br/ccivil_03/leis/l8078compilado.htm" };
 
 export const guidePages: ContentPage[] = [
   {
@@ -343,7 +406,6 @@ export const guidePages: ContentPage[] = [
     title: "Como escolher um sistema para oficina mecânica | Auttra",
     description:
       "Checklist para escolher um sistema para oficina mecânica: ordem de serviço, orçamento, estoque, financeiro, acesso da equipe, celular, implantação e contrato.",
-    eyebrow: "Guia",
     h1: "Como escolher um sistema para oficina mecânica.",
     lead:
       "Um checklist para comparar sistemas de gestão de oficina antes de contratar: o que o sistema precisa fazer, o que perguntar na demonstração e quais sinais indicam que ele não serve para a sua rotina.",
@@ -357,28 +419,57 @@ export const guidePages: ContentPage[] = [
       },
       {
         heading: "As funções que não podem faltar",
-        items: [
-          "**Clientes e veículos**: cadastro com o histórico de serviços de cada carro.",
-          "**Orçamento**: enviado ao cliente, de preferência pelo WhatsApp, e convertido em ordem de serviço sem redigitar.",
-          "**Ordem de serviço**: serviços, peças, mecânico responsável, valores e status.",
-          "**Estoque**: entrada pela nota fiscal (XML) e alerta de estoque baixo.",
-          "**Financeiro**: contas a pagar e a receber, com parcelas e pagamento parcial.",
-          "**Relatórios**: faturamento, margem e inadimplência, no mínimo.",
-          "**Agenda**: se a oficina trabalha com horário marcado.",
+        groups: [
+          {
+            title: "No atendimento",
+            items: [
+              "**Clientes e veículos**, com o histórico de serviços de cada carro.",
+              "**Orçamento** enviado ao cliente, de preferência pelo WhatsApp, e convertido em O.S. sem redigitar.",
+              "**Ordem de serviço** com serviços, peças, mecânico responsável, valores e status.",
+              "**Agenda**, se a oficina trabalha com horário marcado.",
+            ],
+          },
+          {
+            title: "No controle",
+            items: [
+              "**Estoque** com entrada pela nota fiscal (XML) e alerta de estoque baixo.",
+              "**Contas a pagar e a receber**, com parcelas e pagamento parcial.",
+              "**Relatórios** de faturamento, margem e inadimplência, no mínimo.",
+            ],
+          },
         ],
       },
       {
         heading: "Perguntas para fazer na demonstração",
-        items: [
-          "Funciona no navegador ou precisa instalar? Funciona no celular?",
-          "Cada funcionário tem o próprio acesso? Dá para limitar o que o mecânico e a recepção veem?",
-          "Como os dados que já tenho (clientes, veículos, peças) entram no sistema?",
-          "Como é a implantação e o treinamento da equipe?",
-          "Qual é o valor, o que está incluído e como funciona o cancelamento?",
-          "Como é o suporte e por qual canal ele atende?",
-          "O sistema emite nota fiscal de serviço ou se integra a um emissor? Isso importa para a sua oficina?",
-          "Onde ficam os dados, como é feito o backup e como exporto tudo se quiser sair?",
+        groups: [
+          {
+            title: "Uso no dia a dia",
+            items: [
+              "Funciona no navegador ou precisa instalar? Funciona no celular?",
+              "Cada funcionário tem o próprio acesso? Dá para limitar o que o mecânico e a recepção veem?",
+              "O sistema emite nota fiscal de serviço ou se integra a um emissor? Isso importa para a sua oficina?",
+            ],
+          },
+          {
+            title: "Contratação",
+            items: [
+              "Qual é o valor, o que está incluído e como funciona o cancelamento?",
+              "Como é a implantação e o treinamento da equipe?",
+              "Como é o suporte e por qual canal ele atende?",
+            ],
+          },
+          {
+            title: "Seus dados",
+            items: [
+              "Como os dados que já tenho (clientes, veículos, peças) entram no sistema?",
+              "Onde ficam os dados, como é feito o backup e como exporto tudo se quiser sair?",
+            ],
+          },
         ],
+        aside: {
+          text: "Quer fazer essas perguntas à Auttra? A demonstração segue a rotina da sua oficina e termina com valores e regras de contrato.",
+          link: { label: "Solicitar demonstração", href: "#demonstracao" },
+        },
       },
       {
         heading: "Sinais de alerta",
@@ -428,7 +519,7 @@ export const guidePages: ContentPage[] = [
     ],
     related: ["/ordem-de-servico-oficina/", "/orcamento-oficina-whatsapp/", "/guias/como-fazer-ordem-de-servico-oficina/"],
     published: "2026-11-04",
-    updated: "2026-11-04",
+    updated: "2026-11-05",
   },
   {
     ...fazerOsLink,
@@ -436,7 +527,6 @@ export const guidePages: ContentPage[] = [
     title: "Como fazer ordem de serviço de oficina mecânica | Auttra",
     description:
       "O que uma ordem de serviço de oficina mecânica precisa ter: dados do cliente e do veículo, serviços, peças, valores, prazos, garantia e a autorização do cliente.",
-    eyebrow: "Guia",
     h1: "Como fazer ordem de serviço de oficina mecânica.",
     lead:
       "O que colocar na O.S., em que ordem preencher e quais regras do Código de Defesa do Consumidor valem para o serviço no carro do cliente.",
@@ -449,18 +539,34 @@ export const guidePages: ContentPage[] = [
       },
       {
         heading: "O que a O.S. precisa ter",
-        items: [
-          "**Cliente**: nome, telefone ou WhatsApp e documento, se a oficina emite nota.",
-          "**Veículo**: placa, marca, modelo, ano e quilometragem na entrada.",
-          "**Relato do cliente**: o problema descrito com as palavras dele.",
-          "**Diagnóstico**: o que o mecânico encontrou.",
-          "**Serviços**: cada serviço com o valor da mão de obra.",
-          "**Peças**: cada peça com quantidade e valor, e se é original, nova ou de outro tipo.",
-          "**Prazos**: data de entrada e previsão de entrega.",
-          "**Responsável**: o mecânico que vai executar o serviço.",
-          "**Valores e pagamento**: total, desconto, forma e condições de pagamento.",
-          "**Garantia**: o prazo e o que ela cobre.",
-          "**Autorização**: a aprovação do cliente, por assinatura ou por mensagem registrada.",
+        paragraphs: ["São onze informações, que cabem em quatro blocos. O modelo abaixo mostra cada bloco preenchido, com dados de exemplo."],
+        figure: "os-anatomy",
+        groups: [
+          { title: "1. Quem", items: ["**Cliente**: nome, telefone ou WhatsApp e documento, se a oficina emite nota."] },
+          {
+            title: "2. O carro",
+            items: [
+              "**Veículo**: placa, marca, modelo, ano e quilometragem na entrada.",
+              "**Relato do cliente**: o problema descrito com as palavras dele.",
+              "**Diagnóstico**: o que o mecânico encontrou.",
+            ],
+          },
+          {
+            title: "3. O serviço",
+            items: [
+              "**Serviços**: cada serviço com o valor da mão de obra.",
+              "**Peças**: cada peça com quantidade e valor, e se é original, nova ou de outro tipo.",
+              "**Responsável e prazos**: o mecânico, a data de entrada e a previsão de entrega.",
+            ],
+          },
+          {
+            title: "4. O acordo",
+            items: [
+              "**Valores e pagamento**: total, desconto, forma e condições de pagamento.",
+              "**Garantia**: o prazo e o que ela cobre.",
+              "**Autorização**: a aprovação do cliente, por assinatura ou por mensagem registrada.",
+            ],
+          },
         ],
       },
       {
@@ -474,6 +580,10 @@ export const guidePages: ContentPage[] = [
           "Atualize o status durante o serviço e avise o cliente se algo mudar.",
           "Ao concluir, revise os itens, registre o pagamento e entregue a O.S. ao cliente.",
         ],
+        aside: {
+          text: "Na Auttra, esse caminho já vem pronto: o orçamento aprovado vira O.S. com um clique, e a O.S. concluída vira cobrança.",
+          link: { label: "Ver a ordem de serviço da Auttra", href: "/ordem-de-servico-oficina/" },
+        },
       },
       {
         heading: "O que diz o Código de Defesa do Consumidor",
@@ -527,8 +637,9 @@ export const guidePages: ContentPage[] = [
       },
     ],
     related: ["/ordem-de-servico-oficina/", "/orcamento-oficina-whatsapp/", "/guias/como-escolher-sistema-para-oficina/"],
+    sources: [cdcSource],
     published: "2026-11-04",
-    updated: "2026-11-04",
+    updated: "2026-11-05",
   },
 ];
 
@@ -537,14 +648,23 @@ export const guidesHub = {
   title: "Guias de gestão para oficina mecânica | Auttra",
   description:
     "Guias práticos para quem administra oficina mecânica: como escolher um sistema, como fazer ordem de serviço e o que a lei pede no orçamento e na garantia.",
-  eyebrow: "Guias",
   h1: "Guias para quem administra oficina mecânica.",
-  lead: "Conteúdo prático sobre a rotina da oficina: do orçamento à ordem de serviço, do estoque ao caixa.",
-  updated: "2026-11-04",
+  lead: "Conteúdo prático sobre a rotina da oficina: como escolher um sistema, como montar a ordem de serviço e o que a lei pede no orçamento e na garantia.",
+  updated: "2026-11-05",
 };
 
 export const contentPages = [...featurePages, ...guidePages];
 
 export function findContentPage(path: string) {
   return contentPages.find((page) => page.path === path);
+}
+
+/** Âncora estável de uma seção, usada no sumário dos guias. */
+export function sectionId(heading: string) {
+  return heading
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
 }
