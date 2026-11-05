@@ -6,9 +6,7 @@ import {
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent,
-  type ReactNode,
 } from "react";
-import logo from "./assets/auttra-logo.svg";
 import agendaScreen from "./assets/screens/agenda.webp";
 import atencaoScreen from "./assets/screens/atencao.webp";
 import estoqueScreen from "./assets/screens/estoque.webp";
@@ -19,118 +17,11 @@ import ordensScreen from "./assets/screens/ordens.webp";
 import painelScreen from "./assets/screens/painel.webp";
 import painelScreen1200 from "./assets/screens/painel-1200.webp";
 import painelScreen1800 from "./assets/screens/painel-1800.webp";
+import { DemoLink, Icon, SiteChrome, WhatsappLink, trackEvent, whatsappUrl, type IconName } from "./components/Shared";
+import { homeFaqs as faqs } from "./site/home";
 
-const appUrl = import.meta.env.VITE_APP_URL?.trim() || "https://app.auttra.com.br";
 const formEndpoint = import.meta.env.VITE_FORM_ENDPOINT?.trim() || "";
-const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
-const whatsappUrl =
-  import.meta.env.VITE_WHATSAPP_URL?.trim() ||
-  `https://wa.me/5548991268901?text=${encodeURIComponent("Olá! Vim pelo site e quero conhecer a Auttra.")}`;
 const schedulingUrl = import.meta.env.VITE_SCHEDULING_URL?.trim() || "";
-
-type IconName =
-  | "arrow"
-  | "calendar"
-  | "chart"
-  | "check"
-  | "clipboard"
-  | "close"
-  | "menu"
-  | "message"
-  | "package"
-  | "phone"
-  | "shield"
-  | "spark"
-  | "users"
-  | "wallet";
-
-function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
-  const paths: Record<IconName, ReactNode> = {
-    arrow: <path d="m5 12 14 0m-5-5 5 5-5 5" />,
-    calendar: (
-      <>
-        <rect x="3" y="5" width="18" height="16" rx="2" />
-        <path d="M16 3v4M8 3v4M3 10h18m-14 4h3m4 0h3m-10 3h3" />
-      </>
-    ),
-    chart: (
-      <>
-        <path d="M4 19V9m6 10V5m6 14v-7m4 7H2" />
-        <path d="m4 7 5-3 5 5 6-6" />
-      </>
-    ),
-    check: <path d="m5 12 4 4L19 6" />,
-    clipboard: (
-      <>
-        <rect x="5" y="4" width="14" height="17" rx="2" />
-        <path d="M9 4.5V3h6v1.5M9 10h6m-6 4h6m-6 4h4" />
-      </>
-    ),
-    close: <path d="m6 6 12 12M18 6 6 18" />,
-    menu: <path d="M4 7h16M4 12h16M4 17h16" />,
-    message: (
-      <>
-        <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z" />
-        <path d="M8.4 8.4c.5 2.6 2.6 4.7 5.2 5.2" />
-      </>
-    ),
-    package: (
-      <>
-        <path d="m4 7 8-4 8 4v10l-8 4-8-4Z" />
-        <path d="m4 7 8 4 8-4M12 11v10" />
-      </>
-    ),
-    phone: (
-      <>
-        <rect x="6" y="2" width="12" height="20" rx="3" />
-        <path d="M10 5h4M11 18h2" />
-      </>
-    ),
-    shield: (
-      <>
-        <path d="M12 3 4.5 6v5.5c0 4.8 3 8 7.5 9.5 4.5-1.5 7.5-4.7 7.5-9.5V6Z" />
-        <path d="m9 12 2 2 4-5" />
-      </>
-    ),
-    spark: <path d="m12 2 1.6 5.3L19 9l-5.4 1.7L12 16l-1.6-5.3L5 9l5.4-1.7Zm7 13 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7Z" />,
-    users: (
-      <>
-        <circle cx="9" cy="8" r="3" />
-        <path d="M3.5 20v-2.5A4.5 4.5 0 0 1 8 13h2a4.5 4.5 0 0 1 4.5 4.5V20M15 5.2a3 3 0 0 1 0 5.6m2 2.3a4.5 4.5 0 0 1 3.5 4.4V20" />
-      </>
-    ),
-    wallet: (
-      <>
-        <path d="M4 6.5h14a2 2 0 0 1 2 2V19H4a2 2 0 0 1-2-2V6.5a3 3 0 0 1 3-3h11" />
-        <path d="M15 12h5v4h-5a2 2 0 0 1 0-4Z" />
-      </>
-    ),
-  };
-
-  return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      {paths[name]}
-    </svg>
-  );
-}
-
-const navigation = [
-  ["Por que mudar", "#comparativo"],
-  ["Como funciona", "#atencao"],
-  ["Produto", "#produto"],
-  ["Recursos", "#recursos"],
-  ["Dúvidas", "#duvidas"],
-];
 
 // Os mesmos avisos da tela inicial do sistema (painel.service no backend).
 const attentionAlerts = [
@@ -141,26 +32,34 @@ const attentionAlerts = [
   ["Contas a pagar amanhã", "Lembra o que vence no dia seguinte, para o caixa não ser pego de surpresa."],
 ];
 
-const features: { icon: IconName; title: string; text: string }[] = [
+const features: { icon: IconName; title: string; text: string; href?: string; linkLabel?: string }[] = [
   {
     icon: "message",
     title: "Orçamento no WhatsApp do cliente",
     text: "Gere o orçamento em PDF e envie pelo WhatsApp sem sair da tela. Aprovado, ele vira ordem de serviço com um clique.",
+    href: "/orcamento-oficina-whatsapp/",
+    linkLabel: "Orçamento pelo WhatsApp",
   },
   {
     icon: "package",
     title: "Estoque pela nota fiscal",
     text: "Importe o XML da nota do fornecedor e as peças entram com custo e quantidade, sem digitar item por item.",
+    href: "/controle-de-estoque-oficina/",
+    linkLabel: "Controle de estoque",
   },
   {
     icon: "clipboard",
     title: "O.S. completa em PDF",
     text: "Serviços, peças, mecânico responsável e valores na mesma ordem, pronta para imprimir ou mandar para o cliente.",
+    href: "/ordem-de-servico-oficina/",
+    linkLabel: "Ordem de serviço",
   },
   {
     icon: "wallet",
     title: "Contas a pagar e receber",
     text: "Parcelas, desconto, multa e pagamento parcial. A O.S. concluída já gera a cobrança em contas a receber.",
+    href: "/financeiro-oficina/",
+    linkLabel: "Financeiro",
   },
   {
     icon: "chart",
@@ -171,37 +70,6 @@ const features: { icon: IconName; title: string; text: string }[] = [
     icon: "users",
     title: "Cada função vê o que precisa",
     text: "Perfis de Proprietário, Recepção e Mecânico, com permissões ajustáveis e verificação contra robôs no login.",
-  },
-];
-
-const faqs = [
-  {
-    question: "Preciso instalar alguma coisa?",
-    answer: "Não. A Auttra funciona no navegador, no computador e no celular. É só entrar com o seu usuário e senha.",
-  },
-  {
-    question: "O que dá para controlar na Auttra?",
-    answer:
-      "Clientes, veículos, agenda, orçamentos, ordens de serviço, serviços, estoque, fornecedores, contas a pagar e receber e relatórios. Agenda, estoque e fornecedores podem ser ligados ou desligados conforme a rotina da oficina.",
-  },
-  {
-    question: "Consigo mandar o orçamento para o cliente?",
-    answer:
-      "Sim. O orçamento sai em PDF e vai para o WhatsApp do cliente direto da tela de orçamentos. Quando ele aprova, o orçamento vira ordem de serviço com um clique.",
-  },
-  {
-    question: "Dá para lançar as peças pela nota fiscal?",
-    answer: "Sim. Importe o XML da nota do fornecedor e as peças entram no estoque com custo e quantidade.",
-  },
-  {
-    question: "Cada funcionário vê tudo?",
-    answer:
-      "Não. Cada pessoa tem o próprio acesso, e os perfis de Proprietário, Recepção e Mecânico definem o que cada um pode ver e alterar. As permissões podem ser ajustadas.",
-  },
-  {
-    question: "Quanto custa e como funciona a contratação?",
-    answer:
-      "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento da equipe e as regras de contrato e cancelamento.",
   },
 ];
 
@@ -354,98 +222,6 @@ function moveTabFocus(
   requestAnimationFrame(() => document.getElementById(`${prefix}${ids[nextIndex]}`)?.focus());
 }
 
-type TrackingWindow = Window & { dataLayer?: unknown[]; gtag?: (...args: unknown[]) => void };
-
-function trackEvent(name: string, params: Record<string, string> = {}) {
-  (window as TrackingWindow).gtag?.("event", name, { source: "landing_page", ...params });
-}
-
-function DemoLink({ children, className = "button button-primary" }: { children: ReactNode; className?: string }) {
-  return (
-    <a href="#demonstracao" className={className} onClick={() => trackEvent("demo_click")}>
-      {children}
-    </a>
-  );
-}
-
-function WhatsappLink({ children, className = "button button-whatsapp" }: { children: ReactNode; className?: string }) {
-  if (!whatsappUrl) return null;
-  return (
-    <a href={whatsappUrl} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click")}>
-      {children}
-    </a>
-  );
-}
-
-function enableAnalytics() {
-  const trackingWindow = window as TrackingWindow;
-  if (!gaMeasurementId || trackingWindow.gtag) return;
-
-  trackingWindow.dataLayer = trackingWindow.dataLayer || [];
-  // O gtag.js só reconhece o objeto `arguments`; arrays empurrados no dataLayer são ignorados.
-  trackingWindow.gtag = function gtag() {
-    // eslint-disable-next-line prefer-rest-params
-    trackingWindow.dataLayer!.push(arguments);
-  };
-  trackingWindow.gtag("js", new Date());
-  trackingWindow.gtag("config", gaMeasurementId, { anonymize_ip: true });
-
-  const script = document.createElement("script");
-  script.async = true;
-  script.src = `https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(gaMeasurementId)}`;
-  document.head.appendChild(script);
-}
-
-const consentKey = "auttra-cookie-consent";
-
-function readConsent() {
-  try {
-    return window.localStorage.getItem(consentKey);
-  } catch {
-    return null;
-  }
-}
-
-function CookieConsent() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const saved = readConsent();
-    if (!saved) setVisible(true);
-    if (saved === "accepted") enableAnalytics();
-
-    const openSettings = () => setVisible(true);
-    window.addEventListener("auttra:cookie-settings", openSettings);
-    return () => window.removeEventListener("auttra:cookie-settings", openSettings);
-  }, []);
-
-  const choose = (choice: "accepted" | "rejected") => {
-    try {
-      window.localStorage.setItem(consentKey, choice);
-    } catch {
-      // Sem armazenamento a escolha vale só para esta visita.
-    }
-    if (choice === "accepted") enableAnalytics();
-    setVisible(false);
-  };
-
-  if (!visible) return null;
-
-  return (
-    <aside className="cookie-banner" aria-label="Preferências de cookies">
-      <div>
-        <strong>Privacidade sob seu controle</strong>
-        <p>
-          Usamos armazenamento essencial para lembrar suas escolhas. Métricas de acesso só são ativadas com sua autorização. Leia a nossa <a href="/privacidade/">Política de Privacidade</a>.
-        </p>
-      </div>
-      <div className="cookie-actions">
-        <button type="button" className="cookie-secondary" onClick={() => choose("rejected")}>Somente essenciais</button>
-        <button type="button" className="cookie-primary" onClick={() => choose("accepted")}>Aceitar métricas</button>
-      </div>
-    </aside>
-  );
-}
 
 function formatPhone(value: string) {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -585,61 +361,6 @@ function DemoForm() {
   );
 }
 
-function Header() {
-  const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const updateHeader = () => setScrolled(window.scrollY > 18);
-    const closeOnEscape = (event: globalThis.KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
-    };
-
-    updateHeader();
-    window.addEventListener("scroll", updateHeader, { passive: true });
-    window.addEventListener("keydown", closeOnEscape);
-    document.body.classList.toggle("menu-open", open);
-
-    return () => {
-      window.removeEventListener("scroll", updateHeader);
-      window.removeEventListener("keydown", closeOnEscape);
-      document.body.classList.remove("menu-open");
-    };
-  }, [open]);
-
-  return (
-    <header className={scrolled ? "site-header is-scrolled" : "site-header"}>
-      <div className="header-inner shell">
-        <a href="#inicio" className="brand" aria-label="Auttra — início" onClick={() => setOpen(false)}>
-          <img src={logo} alt="Auttra" />
-        </a>
-
-        <nav id="primary-navigation" className={open ? "main-nav is-open" : "main-nav"} aria-label="Navegação principal">
-          {navigation.map(([label, href]) => (
-            <a href={href} key={href} onClick={() => setOpen(false)}>
-              {label}
-            </a>
-          ))}
-          <a className="nav-login" href={appUrl} target="_blank" rel="noreferrer">
-            Acessar plataforma
-          </a>
-          <DemoLink className="button button-primary nav-cta">Quero conhecer</DemoLink>
-        </nav>
-
-        <button
-          type="button"
-          className="menu-toggle"
-          aria-label={open ? "Fechar menu" : "Abrir menu"}
-          aria-expanded={open}
-          aria-controls="primary-navigation"
-          onClick={() => setOpen((value) => !value)}
-        >
-          <Icon name={open ? "close" : "menu"} size={23} />
-        </button>
-      </div>
-    </header>
-  );
-}
 
 function MobilePreview() {
   return (
@@ -722,9 +443,7 @@ function App() {
   }, []);
 
   return (
-    <>
-      <a className="skip-link" href="#inicio">Pular para o conteúdo</a>
-      <Header />
+    <SiteChrome onHome>
       <div className="scroll-progress" ref={progressRef} aria-hidden="true" />
       <main id="inicio" tabIndex={-1}>
         <section className="hero">
@@ -896,6 +615,7 @@ function App() {
                 <div>
                   <h3>{feature.title}</h3>
                   <p>{feature.text}</p>
+                  {feature.href && <a className="feature-more" href={feature.href}>Saiba mais<span className="visually-hidden">: {feature.linkLabel}</span> <Icon name="arrow" size={15} /></a>}
                 </div>
               </li>
             ))}
@@ -992,31 +712,7 @@ function App() {
           <DemoForm />
         </section>
       </main>
-
-      <footer>
-        <div className="shell footer-main">
-          <div><img src={logo} alt="Auttra" /><p>Sistema de gestão para oficina mecânica.</p><a className="footer-email" href="mailto:contato@auttra.com.br">contato@auttra.com.br</a></div>
-          <nav aria-label="Navegação do rodapé">
-            {navigation.map(([label, href]) => <a href={href} key={href}>{label}</a>)}
-          </nav>
-          <div className="footer-action"><DemoLink className="footer-demo">Solicitar demonstração <Icon name="arrow" size={16} /></DemoLink></div>
-        </div>
-        <div className="shell footer-bottom">
-          <span>© {new Date().getFullYear()} Auttra. Todos os direitos reservados.</span>
-          <nav aria-label="Links legais">
-            <a href="/privacidade/">Privacidade</a>
-            <a href="/termos/">Termos de uso</a>
-            <button type="button" onClick={() => window.dispatchEvent(new Event("auttra:cookie-settings"))}>Cookies</button>
-          </nav>
-        </div>
-      </footer>
-      {whatsappUrl && (
-        <a className="whatsapp-float" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Conversar com a Auttra pelo WhatsApp" onClick={() => trackEvent("whatsapp_click", { placement: "float" })}>
-          <Icon name="message" size={24} /><span>Falar no WhatsApp</span>
-        </a>
-      )}
-      <CookieConsent />
-    </>
+    </SiteChrome>
   );
 }
 
