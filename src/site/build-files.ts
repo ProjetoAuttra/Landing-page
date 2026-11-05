@@ -1,7 +1,19 @@
 // Arquivos gerados no build a partir do mesmo conteúdo das páginas:
 // sitemap.xml (buscadores), llms.txt e llms-full.txt (assistentes de IA).
 
-import { APP_URL_DEFAULT, CONTACT_EMAIL, CONTACT_PHONE_DISPLAY, SITE_URL, absoluteUrl } from "./config";
+import {
+  APP_URL_DEFAULT,
+  CONTACT_EMAIL,
+  CONTACT_PHONE_DISPLAY,
+  LAUNCH_OFFER_LAST_DAY_DISPLAY,
+  LAUNCH_OFFER_MONTHS,
+  PRICE_LAUNCH,
+  PRICE_REGULAR,
+  SITE_URL,
+  absoluteUrl,
+  formatPrice,
+  isLaunchOfferActive,
+} from "./config";
 import { homeFaqs, homeMeta, productFeatures } from "./home";
 import { featurePages, guidePages, type ContentPage, type Faq } from "./pages";
 import { appRoutes, staticRoutes } from "./routes";
@@ -28,7 +40,12 @@ const facts = [
   `- Acesso para clientes: ${APP_URL_DEFAULT}`,
   `- Contato comercial: WhatsApp ${CONTACT_PHONE_DISPLAY}, e-mail ${CONTACT_EMAIL}`,
   "- Público: oficinas mecânicas no Brasil",
-  "- Como contratar: demonstração guiada pela rotina da oficina; valor definido pelo tamanho da oficina e apresentado na demonstração, com implantação, treinamento e regras de contrato",
+  `- Preço: plano único com todas as funções e usuários ilimitados, R$ ${formatPrice(PRICE_REGULAR)} por mês por oficina${
+    isLaunchOfferActive()
+      ? `; oferta de lançamento de R$ ${formatPrice(PRICE_LAUNCH)} por mês, garantida por ${LAUNCH_OFFER_MONTHS} meses, para assinaturas feitas até ${LAUNCH_OFFER_LAST_DAY_DISPLAY}`
+      : ""
+  }`,
+  "- Como contratar: demonstração guiada pela rotina da oficina, com implantação, treinamento e regras de contrato",
 ];
 
 function pageLink(page: ContentPage) {

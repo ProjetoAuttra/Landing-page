@@ -13,8 +13,9 @@ import orcamentosScreen from "./assets/screens/orcamentos.webp";
 import ordensScreen from "./assets/screens/ordens.webp";
 import { AlertPanel } from "./components/AlertPanel";
 import { DemoForm } from "./components/DemoForm";
+import { HeroOffer, PricingSection, useLaunchOffer } from "./components/Pricing";
 import { DemoLink, Icon, SiteChrome, WhatsappLink, trackEvent, whatsappAboutHref, whatsappHref, type IconName } from "./components/Shared";
-import { homeFaqs as faqs } from "./site/home";
+import { homeFaqs as faqs, pricingAnswer, pricingQuestion } from "./site/home";
 
 // Cada dor da oficina ao lado do aviso da tela inicial que a pega (mesma ordem do quadro "Precisa de atenção").
 const attentionPairs = [
@@ -196,6 +197,7 @@ function App() {
   const activeIndex = moduleScreens.indexOf(activeCopy);
   const alertCycle = useAlertCycle(attentionPairs.length);
   const activePair = attentionPairs[alertCycle.row];
+  const offerActive = useLaunchOffer();
 
   useEffect(() => {
     const elements = document.querySelectorAll<HTMLElement>("[data-reveal]");
@@ -266,6 +268,7 @@ function App() {
                 <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
                 <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
               </div>
+              {offerActive && <HeroOffer />}
             </div>
             <div className="hero-alert">
               <AlertPanel row={alertCycle.row} label="Hoje, comece por aqui" />
@@ -415,6 +418,8 @@ function App() {
           </div>
         </section>
 
+        <PricingSection offerActive={offerActive} />
+
         <section id="duvidas" className="section faq-section shell">
           <div className="faq-heading" data-reveal="up">
             <h2>O que as oficinas perguntam antes de começar.</h2>
@@ -436,7 +441,7 @@ function App() {
                   <span>{faq.question}</span>
                   <b aria-hidden="true">{openFaq === index ? "−" : "+"}</b>
                 </button>
-                <div className="faq-answer" id={`faq-answer-${index}`}><p>{faq.answer}</p></div>
+                <div className="faq-answer" id={`faq-answer-${index}`}><p>{faq.question === pricingQuestion ? pricingAnswer(offerActive) : faq.answer}</p></div>
               </article>
             ))}
           </div>
@@ -449,7 +454,7 @@ function App() {
             <ul>
               <li><Icon name="check" size={17} /> O caminho do carro: orçamento, O.S. e recebimento</li>
               <li><Icon name="check" size={17} /> Os avisos de atenção com a realidade da sua oficina</li>
-              <li><Icon name="check" size={17} /> Valores, implantação e regras de contrato na conversa</li>
+              <li><Icon name="check" size={17} /> Implantação, treinamento e regras de contrato na conversa</li>
               <li><Icon name="check" size={17} /> Sem compromisso de contratação</li>
             </ul>
             <WhatsappLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere conversar agora? Chamar no WhatsApp</WhatsappLink>

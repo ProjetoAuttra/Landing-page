@@ -23,7 +23,13 @@ export const whatsappUrl = whatsappHref();
 // WhatsApp com a pergunta sobre um recurso específico já escrita (botões "Saiba mais" da página inicial).
 export function whatsappAboutHref(subject: string) {
   if (customWhatsappUrl) return customWhatsappUrl;
-  return `${WHATSAPP_BASE}?text=${encodeURIComponent(`Olá! Vim pelo site e quero saber mais sobre ${subject} na Auttra.`)}`;
+  return whatsappMessageHref(`Olá! Vim pelo site e quero saber mais sobre ${subject} na Auttra.`);
+}
+
+// WhatsApp com uma mensagem pronta qualquer (ex.: assinar com o preço de lançamento).
+export function whatsappMessageHref(text: string) {
+  if (customWhatsappUrl) return customWhatsappUrl;
+  return `${WHATSAPP_BASE}?text=${encodeURIComponent(text)}`;
 }
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
 
@@ -160,6 +166,7 @@ export const navigation = [
   ["Como funciona", "#atencao"],
   ["Produto", "#produto"],
   ["Recursos", "#recursos"],
+  ["Preço", "#preco"],
   ["Dúvidas", "#duvidas"],
 ];
 

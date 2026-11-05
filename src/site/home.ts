@@ -1,3 +1,11 @@
+import {
+  LAUNCH_OFFER_LAST_DAY_DISPLAY,
+  LAUNCH_OFFER_MONTHS,
+  PRICE_LAUNCH,
+  PRICE_REGULAR,
+  formatPrice,
+  isLaunchOfferActive,
+} from "./config";
 import type { Faq } from "./pages";
 
 export const homeMeta = {
@@ -25,6 +33,16 @@ export const productFeatures = [
   "Perfis de acesso de Proprietário, Recepção e Mecânico, com permissões ajustáveis",
   "Funciona no navegador do computador e do celular, sem instalar nada",
 ];
+
+export const pricingQuestion = "Quanto custa e como funciona a contratação?";
+
+// A resposta muda sozinha quando a oferta de lançamento acaba.
+export function pricingAnswer(offerActive: boolean) {
+  const offer = offerActive
+    ? ` Quem assinar até ${LAUNCH_OFFER_LAST_DAY_DISPLAY} paga o valor de lançamento de R$ ${formatPrice(PRICE_LAUNCH)} por mês, garantido por ${LAUNCH_OFFER_MONTHS} meses.`
+    : "";
+  return `A Auttra tem um plano só, com todas as funções e usuários ilimitados, por R$ ${formatPrice(PRICE_REGULAR)} por mês por oficina.${offer} A contratação começa pela demonstração, que mostra o sistema com a rotina da sua oficina e explica a implantação, o treinamento da equipe e as regras de contrato e cancelamento.`;
+}
 
 export const homeFaqs: Faq[] = [
   {
@@ -61,8 +79,7 @@ export const homeFaqs: Faq[] = [
       "Sim. Ela abre no navegador do celular com a mesma conta do computador. Dá para consultar o que precisa de atenção, a agenda e as ordens de serviço de onde estiver.",
   },
   {
-    question: "Quanto custa e como funciona a contratação?",
-    answer:
-      "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento da equipe e as regras de contrato e cancelamento.",
+    question: pricingQuestion,
+    answer: pricingAnswer(isLaunchOfferActive()),
   },
 ];

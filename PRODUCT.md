@@ -25,7 +25,8 @@ A tela inicial que avisa o que precisa de atenção: O.S. parada há mais de 5 d
 - A oficina conversa com os clientes pelo WhatsApp; orçamentos e contato comercial passam por ele.
 - O sistema roda no navegador, no computador da recepção e no celular do dono, com a mesma conta.
 - Notas de fornecedores chegam em XML e alimentam o estoque.
-- Contratação: demonstração guiada pela rotina da oficina, com valor definido pelo tamanho da oficina e apresentado na demonstração, junto com implantação, treinamento e regras de contrato.
+- Contratação: demonstração guiada pela rotina da oficina, que apresenta implantação, treinamento e regras de contrato. Não há checkout no site.
+- Preço público: um plano só, por oficina, com todas as funções atuais e usuários ilimitados, R$ 89,90/mês. Oferta de lançamento: R$ 59,90/mês, garantido por 12 meses, para assinaturas feitas até 31/12/2026. Valores e data ficam em `src/site/config.ts`; depois do prazo a página mostra só o preço normal sozinha.
 - Clientes acessam a plataforma em https://app.auttra.com.br; o site comercial é https://auttra.com.br.
 
 ## Capabilities and Constraints
@@ -38,11 +39,12 @@ Confirmado:
 - Contas a pagar e receber com parcelas, desconto, multa e pagamento parcial; O.S. concluída gera conta a receber; fluxo de caixa por semana e por forma de pagamento.
 - 11 relatórios, entre eles margem por O.S., produtividade por mecânico, inadimplência, orçamentos perdidos, fluxo de caixa e faturamento.
 - Perfis Proprietário, Recepção e Mecânico com permissões ajustáveis; verificação contra robôs no login.
+- Link público para o cliente acompanhar o orçamento (e aprovar ou recusar) e a O.S.
 - Funciona no navegador do computador e do celular, sem instalação.
 
 Em aberto (não afirmar no site):
 - Emissão de nota fiscal: em desenvolvimento. Não divulgar até existir.
-- Preço público: não há; o valor é apresentado na demonstração.
+- Recursos ainda não prontos: WhatsApp automático e fotos no orçamento ou na O.S.
 
 Técnico (site): Vite + Preact com HTML pré-renderizado por rota, hospedado na Vercel; conteúdo das páginas de recursos e guias em `src/site/pages.ts`; leads vão para o WhatsApp comercial (48) 99126-8901.
 

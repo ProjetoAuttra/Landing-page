@@ -4,12 +4,16 @@
 import {
   CONTACT_EMAIL,
   CONTACT_PHONE,
+  LAUNCH_OFFER_LAST_DAY,
   LOGO_IMAGE,
   OG_IMAGE,
+  PRICE_LAUNCH,
+  PRICE_REGULAR,
   SITE_NAME,
   SITE_URL,
   SOCIAL_PROFILES,
   absoluteUrl,
+  isLaunchOfferActive,
 } from "./config";
 import { homeFaqs, homeMeta, productFeatures } from "./home";
 import { findContentPage, guidePages, guidesHub, type ContentPage, type Faq } from "./pages";
@@ -63,6 +67,18 @@ function website(): Node {
   };
 }
 
+// Preço do plano na data do build (o de lançamento, com validade, enquanto a oferta vale).
+function offer(): Node {
+  const launch = isLaunchOfferActive();
+  return {
+    "@type": "Offer",
+    price: (launch ? PRICE_LAUNCH : PRICE_REGULAR).toFixed(2),
+    priceCurrency: "BRL",
+    ...(launch ? { priceValidUntil: LAUNCH_OFFER_LAST_DAY } : {}),
+    url: `${SITE_URL}/#preco`,
+  };
+}
+
 function software(): Node {
   return {
     "@type": "SoftwareApplication",
@@ -77,6 +93,7 @@ function software(): Node {
     description:
       "Sistema de gestão para oficina mecânica com ordem de serviço, orçamento em PDF pelo WhatsApp, agenda, estoque com entrada pelo XML da nota, financeiro e relatórios. A tela inicial avisa o que precisa de atenção.",
     featureList: productFeatures,
+    offers: offer(),
     screenshot: OG_IMAGE,
     audience: { "@type": "BusinessAudience", audienceType: "Oficinas mecânicas" },
     publisher: { "@id": ORG_ID },

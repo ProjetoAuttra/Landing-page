@@ -59,7 +59,7 @@ const buyerFaqs: Faq[] = [
   {
     question: "Quanto custa a Auttra?",
     answer:
-      "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento da equipe e as regras de contrato e cancelamento.",
+      "A Auttra tem um plano só, com todas as funções e usuários ilimitados, cobrado por mês por oficina. O valor está na [seção de preço](/#preco) da página inicial. A implantação, o treinamento da equipe e as regras de contrato e cancelamento são apresentados na demonstração.",
   },
   {
     question: "Como funciona a demonstração?",
@@ -492,7 +492,7 @@ export const guidePages: ContentPage[] = [
         paragraphs: [
           "A Auttra é um sistema para oficina mecânica que funciona no navegador, no computador e no celular. Ela reúne clientes, veículos, agenda, [orçamentos](/orcamento-oficina-whatsapp/), [ordens de serviço](/ordem-de-servico-oficina/), [estoque](/controle-de-estoque-oficina/), fornecedores e [financeiro](/financeiro-oficina/), com perfis de acesso para Proprietário, Recepção e Mecânico.",
           "O diferencial é a tela inicial, que avisa o que precisa de atenção: O.S. parada há mais de 5 dias, conta vencida, orçamento sem resposta, estoque crítico e conta a pagar no dia seguinte.",
-          "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento e as regras de contrato.",
+          "A Auttra tem um plano só, com todas as funções e usuários ilimitados, e o [preço publicado no site](/#preco). A implantação, o treinamento e as regras de contrato são apresentados na demonstração.",
         ],
       },
     ],
