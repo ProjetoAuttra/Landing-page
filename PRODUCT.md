@@ -49,6 +49,7 @@ Técnico (site): Vite + Preact com HTML pré-renderizado por rota, hospedado na 
 ## Brand Commitments
 
 - Nome: Auttra. Logo em `src/assets/auttra-logo.svg` e símbolo em `public/favicon.svg`; a narrativa da marca parte da flecha do símbolo (direção para a gestão, clareza sobre o próximo passo).
+- Slogan: "Você dirige a oficina. A Auttra mostra o caminho." Nos textos, a direção aparece como "o próximo passo" e "por onde começar", sempre seguida de um aviso real do sistema; a flecha não vira padrão gráfico.
 - Voz: português do Brasil, direto e concreto, na linguagem da oficina ("carro parado no pátio", "peça que acabou no meio do serviço"); fala com "você" e evita jargão de software.
 - Telas do produto mostradas no site são capturas reais (`src/assets/screens/`) com dados de exemplo da "Oficina Central", sempre identificadas como dados de exemplo.
 

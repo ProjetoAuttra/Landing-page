@@ -329,7 +329,7 @@ function Footer() {
   return (
     <footer>
       <div className="shell footer-main">
-        <div><img src={logo} alt="Auttra" /><p>Sistema de gestão para oficina mecânica.</p><a className="footer-email" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></div>
+        <div><img src={logo} alt="Auttra" /><p className="footer-tagline">Você dirige a oficina. A Auttra mostra o caminho.</p><p>Sistema de gestão para oficina mecânica.</p><a className="footer-email" href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></div>
         <nav aria-label="Navegação do rodapé">
           {navigation.map(([label, href]) => <a href={sectionHref(href)} key={href}>{label}</a>)}
         </nav>

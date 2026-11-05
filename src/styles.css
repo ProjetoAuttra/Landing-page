@@ -391,6 +391,8 @@ footer { color: white; background: #061025; }
 .footer-main { min-height: 220px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 60px; align-items: center; }
 .footer-main img { width: 130px; filter: brightness(0) invert(1); }
 .footer-main p { margin: 14px 0 0; color: #8391a8; font-size: 13px; }
+.footer-main .footer-tagline { margin-top: 18px; color: white; font-size: 15px; font-weight: 650; }
+.footer-main .footer-tagline + p { margin-top: 4px; }
 .footer-email { display: inline-block; margin-top: 10px; color: #a9b4c5; font-size: 12px; }
 .footer-main nav { display: flex; gap: 24px; }
 .footer-main nav a { color: #a9b4c5; font-size: 13px; font-weight: 600; }

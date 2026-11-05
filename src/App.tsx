@@ -258,9 +258,9 @@ function App() {
           <div className="direction-trails" aria-hidden="true"><i /><i /><i /></div>
           <div className="shell hero-grid">
             <div className="hero-copy">
-              <h1>Sistema para oficina que avisa <span>o que precisa de atenção.</span></h1>
+              <h1>Sistema para oficina que mostra <span>o próximo passo.</span></h1>
               <p>
-                Carro parado, cliente devendo, peça acabando: a Auttra mostra na tela inicial antes de virar prejuízo. Com ordem de serviço, orçamento, agenda, estoque e financeiro num só lugar, no computador e no celular.
+                Abriu a Auttra, ela já aponta: O.S. parada há mais de 5 dias, cliente com conta vencida, orçamento sem resposta, peça acabando. Cada aviso abre a lista certa para resolver, com ordem de serviço, orçamento, agenda, estoque e financeiro num só lugar.
               </p>
               <div className="hero-actions">
                 <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
@@ -268,7 +268,7 @@ function App() {
               </div>
             </div>
             <div className="hero-alert">
-              <AlertPanel row={alertCycle.row} label="Dados de exemplo" />
+              <AlertPanel row={alertCycle.row} label="Hoje, comece por aqui" />
               <p className="hero-alert-caption" aria-hidden="true" key={alertCycle.row}>
                 <b>{activePair.alert}</b> {activePair.rule}
               </p>
@@ -279,8 +279,8 @@ function App() {
         <section id="atencao" className="pairs-section section">
           <div className="shell">
             <div className="pairs-heading" data-reveal="up">
-              <h2>Carro esquecido no pátio, cliente devendo, peça que acabou no meio do serviço.</h2>
-              <p>Quase todo prejuízo de oficina começa em algo que ninguém viu a tempo. A tela inicial da Auttra mostra cada um desses sinais, e cada aviso abre a lista certa para resolver.</p>
+              <h2>Sem aviso, o problema só aparece quando já virou prejuízo.</h2>
+              <p>Carro esquecido no pátio, cliente devendo, peça que acabou no meio do serviço. A tela inicial da Auttra mostra cada um desses sinais a tempo, e cada aviso abre a lista certa para resolver.</p>
             </div>
             <div className="pairs-table" data-reveal="up">
               <div className="pairs-head" aria-hidden="true">
@@ -309,8 +309,8 @@ function App() {
         <section id="produto" className="product-section section">
           <div className="shell">
             <div className="product-heading" data-reveal="up">
-              <h2>O caminho do carro, tela por tela.</h2>
-              <p>Do agendamento ao recebimento. Telas reais da plataforma, só os dados são de exemplo.</p>
+              <h2>Do orçamento ao recebimento, cada etapa aponta a próxima.</h2>
+              <p>O caminho do carro, tela por tela. Telas reais da plataforma, só os dados são de exemplo.</p>
             </div>
 
             <div className="module-tabs" role="tablist" aria-label="Etapas na plataforma" data-reveal="up">
@@ -401,7 +401,7 @@ function App() {
         <section id="mobile" className="mobile-section section">
           <div className="shell mobile-layout">
             <div className="mobile-copy" data-reveal="up">
-              <h2>A oficina também acompanha você no celular.</h2>
+              <h2>Longe da oficina, sem perder o rumo dela.</h2>
               <p>Consulte o que precisa de atenção, a agenda e as ordens de serviço de onde estiver, ao longo do dia.</p>
               <ul>
                 <li><Icon name="check" size={18} /><span><b>Sem instalar nada</b> Abre no navegador do celular, com a mesma conta.</span></li>
@@ -444,7 +444,7 @@ function App() {
 
         <section id="demonstracao" className="final-cta lead-section shell" data-reveal="scale">
           <div className="lead-copy">
-            <h2>Uma demonstração com a cara da sua oficina.</h2>
+            <h2>Veja o caminho da sua oficina dentro da Auttra.</h2>
             <p>Conte um pouco sobre a oficina. Ao enviar, o WhatsApp abre com tudo preenchido para combinar a demonstração.</p>
             <ul>
               <li><Icon name="check" size={17} /> O caminho do carro: orçamento, O.S. e recebimento</li>
