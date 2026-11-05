@@ -17,7 +17,7 @@ import painelScreen from "./assets/screens/painel.webp";
 import painelScreen1200 from "./assets/screens/painel-1200.webp";
 import painelScreen1800 from "./assets/screens/painel-1800.webp";
 import { DemoForm } from "./components/DemoForm";
-import { DemoLink, Icon, SiteChrome, WhatsappLink, whatsappUrl, type IconName } from "./components/Shared";
+import { DemoLink, Icon, SiteChrome, WhatsappLink, trackEvent, whatsappAboutHref, whatsappUrl, type IconName } from "./components/Shared";
 import { homeFaqs as faqs } from "./site/home";
 
 // Os mesmos avisos da tela inicial do sistema (painel.service no backend).
@@ -29,34 +29,30 @@ const attentionAlerts = [
   ["Contas a pagar amanhã", "Lembra o que vence no dia seguinte, para o caixa não ser pego de surpresa."],
 ];
 
-const features: { icon: IconName; title: string; text: string; href?: string; linkLabel?: string }[] = [
+const features: { icon: IconName; title: string; text: string; whatsappTopic?: string }[] = [
   {
     icon: "message",
     title: "Orçamento no WhatsApp do cliente",
     text: "Gere o orçamento em PDF e envie pelo WhatsApp sem sair da tela. Aprovado, ele vira ordem de serviço com um clique.",
-    href: "/orcamento-oficina-whatsapp/",
-    linkLabel: "Orçamento pelo WhatsApp",
+    whatsappTopic: "o orçamento pelo WhatsApp",
   },
   {
     icon: "package",
     title: "Estoque pela nota fiscal",
     text: "Importe o XML da nota do fornecedor e as peças entram com custo e quantidade, sem digitar item por item.",
-    href: "/controle-de-estoque-oficina/",
-    linkLabel: "Controle de estoque",
+    whatsappTopic: "o controle de estoque",
   },
   {
     icon: "clipboard",
     title: "O.S. completa em PDF",
     text: "Serviços, peças, mecânico responsável e valores na mesma ordem, pronta para imprimir ou mandar para o cliente.",
-    href: "/ordem-de-servico-oficina/",
-    linkLabel: "Ordem de serviço",
+    whatsappTopic: "a ordem de serviço",
   },
   {
     icon: "wallet",
     title: "Contas a pagar e receber",
     text: "Parcelas, desconto, multa e pagamento parcial. A O.S. concluída já gera a cobrança em contas a receber.",
-    href: "/financeiro-oficina/",
-    linkLabel: "Financeiro",
+    whatsappTopic: "as contas a pagar e receber",
   },
   {
     icon: "chart",
@@ -473,7 +469,17 @@ function App() {
                 <div>
                   <h3>{feature.title}</h3>
                   <p>{feature.text}</p>
-                  {feature.href && <a className="feature-more" href={feature.href}>Saiba mais<span className="visually-hidden">: {feature.linkLabel}</span> <Icon name="arrow" size={15} /></a>}
+                  {feature.whatsappTopic && (
+                    <a
+                      className="feature-more"
+                      href={whatsappAboutHref(feature.whatsappTopic)}
+                      target="_blank"
+                      rel="noreferrer"
+                      onClick={() => trackEvent("whatsapp_click", { placement: "feature", feature: feature.title })}
+                    >
+                      <Icon name="message" size={15} /> Saiba mais<span className="visually-hidden"> sobre {feature.whatsappTopic} pelo WhatsApp</span>
+                    </a>
+                  )}
                 </div>
               </li>
             ))}

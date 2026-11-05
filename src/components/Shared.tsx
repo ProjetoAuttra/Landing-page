@@ -19,6 +19,12 @@ export function whatsappHref(topic?: string) {
 }
 
 export const whatsappUrl = whatsappHref();
+
+// WhatsApp com a pergunta sobre um recurso específico já escrita (botões "Saiba mais" da página inicial).
+export function whatsappAboutHref(subject: string) {
+  if (customWhatsappUrl) return customWhatsappUrl;
+  return `${WHATSAPP_BASE}?text=${encodeURIComponent(`Olá! Vim pelo site e quero saber mais sobre ${subject} na Auttra.`)}`;
+}
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
 
 type PageContextValue = {
