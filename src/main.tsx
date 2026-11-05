@@ -1,5 +1,6 @@
 import { hydrate, render, type VNode } from "preact";
 import App from "./App";
+import "@fontsource-variable/inter/wght.css";
 import "./styles.css";
 import "./content.css";
 

@@ -157,7 +157,6 @@ export function RichText({ text }: { text: string }) {
 }
 
 export const navigation = [
-  ["Por que mudar", "#comparativo"],
   ["Como funciona", "#atencao"],
   ["Produto", "#produto"],
   ["Recursos", "#recursos"],
@@ -307,7 +306,7 @@ function Header() {
           <a className="nav-login" href={appUrl} target="_blank" rel="noreferrer">
             Acessar plataforma
           </a>
-          <DemoLink className="button button-primary nav-cta">{onHome ? "Quero conhecer" : "Solicitar demonstração"}</DemoLink>
+          <DemoLink className="button button-primary nav-cta">Solicitar demonstração</DemoLink>
         </nav>
 
         <button
@@ -359,6 +358,40 @@ function Footer() {
   );
 }
 
+// Botão flutuante do WhatsApp: some enquanto os botões do topo ou o formulário estão na tela,
+// para não cobrir os campos nem repetir o que já está à vista.
+function WhatsappFloat() {
+  const [hidden, setHidden] = useState(true);
+
+  useEffect(() => {
+    const targets = [".hero-actions", "#demonstracao"]
+      .map((selector) => document.querySelector(selector))
+      .filter((element): element is Element => Boolean(element));
+    const visible = new Set<Element>();
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => (entry.isIntersecting ? visible.add(entry.target) : visible.delete(entry.target)));
+      setHidden(visible.size > 0);
+    });
+    targets.forEach((target) => observer.observe(target));
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <a
+      className={hidden ? "whatsapp-float is-hidden" : "whatsapp-float"}
+      href={whatsappUrl}
+      target="_blank"
+      rel="noreferrer"
+      aria-label="Conversar com a Auttra pelo WhatsApp"
+      aria-hidden={hidden}
+      tabIndex={hidden ? -1 : undefined}
+      onClick={() => trackEvent("whatsapp_click", { placement: "float" })}
+    >
+      <Icon name="message" size={24} /><span>Chamar no WhatsApp</span>
+    </a>
+  );
+}
+
 // Moldura comum a todas as páginas: cabeçalho, rodapé, WhatsApp flutuante e consentimento.
 // O botão flutuante fica só na página inicial: as páginas de conteúdo já têm o WhatsApp no topo
 // e no fim, e no celular o botão cobria o texto.
@@ -370,11 +403,7 @@ export function SiteChrome({ children, ...page }: PageContextValue & { children:
       <Header />
       {children}
       <Footer />
-      {onHome && (
-        <a className="whatsapp-float" href={whatsappUrl} target="_blank" rel="noreferrer" aria-label="Conversar com a Auttra pelo WhatsApp" onClick={() => trackEvent("whatsapp_click", { placement: "float" })}>
-          <Icon name="message" size={24} /><span>Falar no WhatsApp</span>
-        </a>
-      )}
+      {onHome && <WhatsappFloat />}
       <CookieConsent />
     </PageContext.Provider>
   );

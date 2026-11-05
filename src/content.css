@@ -32,7 +32,7 @@ summary:focus-visible { outline: 3px solid rgba(37, 99, 235, .34); outline-offse
 .breadcrumb li + li::before { content: "/"; margin-right: 8px; color: color-mix(in srgb, var(--muted) 45%, white); }
 .breadcrumb a:hover { color: var(--blue); }
 .breadcrumb [aria-current] { color: var(--ink); }
-.page-hero h1 { margin: 0; font-size: clamp(36px, 3.7vw, 54px); line-height: 1.02; letter-spacing: -.045em; text-wrap: balance; }
+.page-hero h1 { margin: 0; font-size: clamp(36px, 3.7vw, 54px); line-height: 1.02; letter-spacing: -.04em; text-wrap: balance; }
 .page-lead { max-width: 62ch; margin: 24px 0 0; color: color-mix(in srgb, var(--ink) 70%, white); font-size: clamp(17px, 1.5vw, 19px); line-height: 1.7; text-wrap: pretty; }
 .page-actions { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 34px; }
 .page-meta { margin: 22px 0 0; color: color-mix(in srgb, var(--ink) 70%, white); font-size: 13px; font-weight: 600; }
@@ -41,7 +41,7 @@ summary:focus-visible { outline: 3px solid rgba(37, 99, 235, .34); outline-offse
 .guide-hero h1 { max-width: 20ch; font-size: clamp(38px, 5vw, 64px); }
 
 /* O quadro "Precisa de atenção", com a linha da página em destaque. */
-.alert-panel { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: white; box-shadow: 0 34px 90px rgba(17, 35, 70, .14), 0 8px 24px rgba(17, 35, 70, .06); }
+.alert-panel { margin: 0; overflow: hidden; border: 1px solid var(--line); border-radius: 18px; background: white; box-shadow: 0 24px 60px rgba(17, 35, 70, .13), 0 4px 14px rgba(17, 35, 70, .05); }
 .alert-shot { --row: 0; position: relative; overflow: hidden; }
 .alert-shot img { width: 100%; height: auto; }
 .alert-spot {
@@ -53,6 +53,7 @@ summary:focus-visible { outline: 3px solid rgba(37, 99, 235, .34); outline-offse
   border-radius: 10px;
   box-shadow: 0 0 0 2px var(--blue), 0 0 0 100vmax rgba(247, 249, 252, .64);
   pointer-events: none;
+  transition: top 700ms cubic-bezier(.16, 1, .3, 1);
 }
 .js .alert-spot { animation: spot-in 1s cubic-bezier(.16, 1, .3, 1) .5s both; }
 .alert-panel .window-top small { color: var(--muted); font-size: 11px; letter-spacing: .04em; }
@@ -65,9 +66,36 @@ summary:focus-visible { outline: 3px solid rgba(37, 99, 235, .34); outline-offse
   from { box-shadow: 0 0 0 10px rgba(29, 78, 216, 0), 0 0 0 100vmax rgba(247, 249, 252, 0); }
 }
 
+/* ---------- Página inicial: topo com o quadro de atenção ---------- */
+.hero-alert { width: min(100%, 900px); }
+.hero-alert-caption { max-width: 620px; min-height: 3.2em; margin: 20px auto 0; color: color-mix(in srgb, var(--ink) 72%, white); font-size: 15.5px; line-height: 1.6; text-align: center; text-wrap: balance; animation: copy-in 420ms cubic-bezier(.16, 1, .3, 1) both; }
+.hero-alert-caption b { color: var(--ink); }
+
+/* ---------- Página inicial: cada dor ao lado do aviso que a pega ---------- */
+.pairs-section { border-block: 1px solid var(--line); background: white; }
+.pairs-heading { max-width: 900px; }
+.pairs-heading h2 { font-size: clamp(36px, 4.6vw, 62px); line-height: 1.03; letter-spacing: -.04em; }
+.pairs-heading p { max-width: 680px; margin: 22px 0 0; color: color-mix(in srgb, var(--ink) 70%, white); font-size: 17px; line-height: 1.7; }
+.pairs-table { margin-top: clamp(44px, 6vw, 72px); }
+.pairs-head, .pairs-table li { display: grid; grid-template-columns: minmax(0, 1fr) 56px minmax(0, 1.15fr); align-items: center; gap: 0 clamp(12px, 2vw, 24px); }
+.pairs-head { padding-bottom: 14px; color: var(--muted); font-size: 13px; font-weight: 700; }
+.pairs-head span:last-child { grid-column: 3; color: var(--blue); }
+.pairs-table ul { margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--line); }
+.pairs-table li { padding: 22px 0; border-bottom: 1px solid var(--line); }
+.pair-pain { display: grid; grid-template-columns: 20px 1fr; gap: 10px; align-items: start; margin: 0; color: color-mix(in srgb, var(--ink) 68%, white); font-size: 16px; line-height: 1.55; }
+.pair-pain svg { margin-top: 4px; color: color-mix(in srgb, var(--muted) 70%, white); }
+/* A seta da marca liga a dor ao aviso. */
+.pair-arrow { position: relative; height: 1px; background: linear-gradient(90deg, color-mix(in srgb, var(--blue) 15%, white), color-mix(in srgb, var(--blue) 70%, white)); }
+.pair-arrow::after { content: ""; position: absolute; top: -4px; right: 0; width: 8px; height: 8px; border-top: 1px solid var(--blue); border-right: 1px solid var(--blue); transform: rotate(45deg); }
+.pair-alert { margin: 0; padding: 14px 18px; border-radius: 12px; background: var(--page); transition: background-color 400ms ease, box-shadow 400ms ease; }
+.pair-alert strong { display: block; font-size: 16.5px; letter-spacing: -.015em; }
+.pair-alert span { display: block; margin-top: 4px; color: color-mix(in srgb, var(--ink) 66%, white); font-size: 14.5px; line-height: 1.55; }
+.pairs-table li.is-active .pair-alert { background: var(--blue-soft); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--blue) 30%, white); }
+.pairs-action { margin-top: 40px; }
+
 /* ---------- O caminho no sistema ---------- */
 .flow { padding: clamp(80px, 9vw, 130px) 0 0; }
-.flow > h2, .page-extras h2, .page-related h2 { margin: 0; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.05; letter-spacing: -.045em; text-wrap: balance; }
+.flow > h2, .page-extras h2, .page-related h2 { margin: 0; font-size: clamp(30px, 3.4vw, 46px); line-height: 1.05; letter-spacing: -.04em; text-wrap: balance; }
 .flow ol { position: relative; display: grid; gap: clamp(40px, 5vw, 64px); margin: 48px 0 0; padding: 0; list-style: none; counter-reset: step; }
 /* A linha da direção: liga as etapas e termina numa ponta de seta, como o símbolo da marca. */
 .flow ol::before { content: ""; position: absolute; top: 34px; bottom: 12px; left: 15px; width: 1px; background: linear-gradient(180deg, color-mix(in srgb, var(--blue) 18%, white), color-mix(in srgb, var(--blue) 60%, white)); }
@@ -206,6 +234,9 @@ summary:focus-visible { outline: 3px solid rgba(37, 99, 235, .34); outline-offse
 }
 
 @media (max-width: 860px) {
+  .pairs-head { display: none; }
+  .pairs-table li { grid-template-columns: 1fr; gap: 10px; }
+  .pair-arrow { display: none; }
   .page-hero { padding: 116px 0 60px; }
   .flow li { grid-template-columns: 1fr; gap: 20px; }
   .page-prose > section, .page-prose > .page-faq { grid-template-columns: 1fr; gap: 16px; }
@@ -214,6 +245,8 @@ summary:focus-visible { outline: 3px solid rgba(37, 99, 235, .34); outline-offse
 }
 
 @media (max-width: 620px) {
+  .hero-alert-caption { font-size: 14.5px; }
+  .pairs-heading h2 { font-size: 34px; }
   .page-hero h1, .guide-hero h1 { font-size: clamp(34px, 9.5vw, 44px); }
   .page-actions { flex-direction: column; }
   .page-actions .button { width: 100%; }

@@ -1,10 +1,10 @@
 import { useEffect, useRef, type CSSProperties } from "react";
 import agendaScreen from "../assets/screens/agenda.webp";
-import atencaoScreen from "../assets/screens/atencao.webp";
 import estoqueScreen from "../assets/screens/estoque.webp";
 import financeiroScreen from "../assets/screens/financeiro.webp";
 import orcamentosScreen from "../assets/screens/orcamentos.webp";
 import ordensScreen from "../assets/screens/ordens.webp";
+import { AlertPanel } from "../components/AlertPanel";
 import { DemoForm } from "../components/DemoForm";
 import { DemoLink, Icon, RichText, WhatsappLink } from "../components/Shared";
 import { featureLinks } from "../site/links";
@@ -28,14 +28,6 @@ const screens: Record<ScreenKey, string> = {
   ordens: ordensScreen,
 };
 
-const alertRows = [
-  "O.S. paradas há mais de 5 dias",
-  "contas vencidas a receber",
-  "orçamentos sem resposta",
-  "estoque crítico",
-  "conta a pagar amanhã",
-];
-
 function formatDate(iso: string) {
   const [year, month, day] = iso.split("-").map(Number);
   const months = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
@@ -51,27 +43,6 @@ function Breadcrumb({ items }: { items: { name: string; path?: string }[] }) {
         ))}
       </ol>
     </nav>
-  );
-}
-
-// O quadro "Precisa de atenção" da tela inicial, com a linha desta página em destaque.
-function AlertPanel({ row }: { row: number }) {
-  return (
-    <figure className="alert-panel">
-      <div className="window-top" aria-hidden="true"><i /><i /><i /><small>Tela inicial</small></div>
-      <div className="alert-shot" style={{ "--row": row } as CSSProperties}>
-        <img
-          src={atencaoScreen}
-          alt={`Quadro Precisa de atenção da tela inicial da Auttra, com destaque para ${alertRows[row]}`}
-          width={1090}
-          height={530}
-          fetchPriority="high"
-          decoding="async"
-        />
-        <span className="alert-spot" aria-hidden="true" />
-      </div>
-      <figcaption>Tela real da Auttra, com dados de exemplo.</figcaption>
-    </figure>
   );
 }
 

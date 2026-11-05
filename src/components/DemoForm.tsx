@@ -129,12 +129,12 @@ export function DemoForm({ source, compact = false }: { source?: string; compact
       </label>
       <label className="form-honeypot" aria-hidden="true">Site<input name="website" tabIndex={-1} autoComplete="off" /></label>
       {status === "error" && <p className="form-error" role="alert">{errorMessage} <a href="mailto:contato@auttra.com.br">contato@auttra.com.br</a></p>}
-      <button className="button button-light form-submit" type="submit" disabled={status === "loading"}>
+      <button className={formEndpoint ? "button button-light form-submit" : "button button-light form-submit form-submit-whatsapp"} type="submit" disabled={status === "loading"}>
         {status === "loading"
           ? <><span className="spinner" /> Enviando...</>
           : formEndpoint
             ? <>Solicitar demonstração <Icon name="arrow" size={18} /></>
-            : <><Icon name="message" size={18} /> Enviar pelo WhatsApp</>}
+            : <><Icon name="message" size={18} /> Enviar e abrir o WhatsApp</>}
       </button>
       {schedulingUrl && <a className="form-schedule" href={schedulingUrl} target="_blank" rel="noreferrer">Prefere escolher um horário agora? <Icon name="calendar" size={15} /></a>}
       <small className="form-assurance">
