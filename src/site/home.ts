@@ -1,10 +1,11 @@
+import { PLAN_MONTHLY_PRICE, PLAN_SEMIANNUAL_MONTHS, PLAN_SEMIANNUAL_PRICE, TRIAL_DAYS, formatPrice } from "./config";
 import type { Faq } from "./pages";
 
 export const homeMeta = {
   path: "/",
   title: "Sistema para oficina mecânica | Auttra",
   description:
-    "Sistema para oficina mecânica que mostra o próximo passo: O.S. parada, conta vencida, orçamento sem resposta e estoque crítico na tela inicial. Peça uma demonstração.",
+    "Sistema para oficina mecânica que mostra o próximo passo: O.S. parada, conta vencida, orçamento sem resposta e estoque crítico na tela inicial. Teste 7 dias grátis, sem cartão.",
   socialTitle: "Auttra | Sistema para oficina mecânica",
   socialDescription: "Você dirige a oficina. A Auttra mostra o caminho.",
   updated: "2026-11-05",
@@ -62,7 +63,10 @@ export const homeFaqs: Faq[] = [
   },
   {
     question: "Quanto custa e como funciona a contratação?",
-    answer:
-      "O valor depende do tamanho da oficina e é apresentado na demonstração, junto com a implantação, o treinamento da equipe e as regras de contrato e cancelamento.",
+    answer: `São dois planos, com as mesmas funções e usuários ilimitados: o semestral, por R$ ${formatPrice(PLAN_SEMIANNUAL_PRICE)} por mês com contrato de ${PLAN_SEMIANNUAL_MONTHS} meses no cartão de crédito, e o mensal, por R$ ${formatPrice(PLAN_MONTHLY_PRICE)} por mês, sem contrato. O valor é por oficina. Antes de assinar, você testa ${TRIAL_DAYS} dias grátis com tudo liberado, sem cartão de crédito.`,
+  },
+  {
+    question: "Como funciona o teste grátis?",
+    answer: `Por ${TRIAL_DAYS} dias você usa a Auttra com tudo liberado, sem cartão de crédito e sem pagar nada. Se não assinar depois disso, continua entrando no sistema e vendo os dados que lançou, mas não consegue criar nem alterar nada. Nada é apagado: ao assinar, tudo volta a funcionar na hora.`,
   },
 ];

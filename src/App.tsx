@@ -13,7 +13,8 @@ import orcamentosScreen from "./assets/screens/orcamentos.webp";
 import ordensScreen from "./assets/screens/ordens.webp";
 import { AlertPanel } from "./components/AlertPanel";
 import { DemoForm } from "./components/DemoForm";
-import { DemoLink, Icon, SiteChrome, WhatsappLink, trackEvent, whatsappAboutHref, whatsappHref, type IconName } from "./components/Shared";
+import { HeroPrice, PricingSection } from "./components/Pricing";
+import { DemoLink, Icon, SiteChrome, TrialLink, WhatsappLink, trackEvent, trialLabel, whatsappAboutHref, whatsappHref, type IconName } from "./components/Shared";
 import { homeFaqs as faqs } from "./site/home";
 
 // Cada dor da oficina ao lado do aviso da tela inicial que a pega (mesma ordem do quadro "Precisa de atenção").
@@ -263,9 +264,10 @@ function App() {
                 Abriu a Auttra, ela já aponta: O.S. parada há mais de 5 dias, cliente com conta vencida, orçamento sem resposta, peça acabando. Cada aviso abre a lista certa para resolver, com ordem de serviço, orçamento, agenda, estoque e financeiro num só lugar.
               </p>
               <div className="hero-actions">
-                <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
+                <TrialLink placement="hero">{trialLabel} <Icon name="arrow" size={18} /></TrialLink>
                 <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
               </div>
+              <HeroPrice />
             </div>
             <div className="hero-alert">
               <AlertPanel row={alertCycle.row} label="Hoje, comece por aqui" />
@@ -301,7 +303,7 @@ function App() {
               </ul>
             </div>
             <div className="pairs-action" data-reveal="up">
-              <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
+              <TrialLink placement="features">{trialLabel} <Icon name="arrow" size={18} /></TrialLink>
             </div>
           </div>
         </section>
@@ -408,12 +410,14 @@ function App() {
                 <li><Icon name="check" size={18} /><span><b>Visão rápida</b> Faturamento, contas e pendências logo na primeira tela.</span></li>
                 <li><Icon name="check" size={18} /><span><b>Mesmos dados</b> O que a recepção lança no computador aparece na hora.</span></li>
               </ul>
-              <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
+              <TrialLink placement="mobile">{trialLabel} <Icon name="arrow" size={18} /></TrialLink>
               <small>Tela real da Auttra no navegador do celular, com dados de exemplo.</small>
             </div>
             <div className="mobile-visual" data-reveal="scale"><MobilePreview /></div>
           </div>
         </section>
+
+        <PricingSection />
 
         <section id="duvidas" className="section faq-section shell">
           <div className="faq-heading" data-reveal="up">
@@ -442,17 +446,17 @@ function App() {
           </div>
         </section>
 
-        <section id="demonstracao" className="final-cta lead-section shell" data-reveal="scale">
+        <section id="teste-gratis" className="final-cta lead-section shell" data-reveal="scale">
           <div className="lead-copy">
-            <h2>Veja o caminho da sua oficina dentro da Auttra.</h2>
-            <p>Conte um pouco sobre a oficina. Ao enviar, o WhatsApp abre com tudo preenchido para combinar a demonstração.</p>
+            <h2>Teste a Auttra 7 dias na sua oficina, de graça.</h2>
+            <p>Conte um pouco sobre a oficina. A gente cria sua conta e libera o acesso pelo WhatsApp.</p>
             <ul>
-              <li><Icon name="check" size={17} /> O caminho do carro: orçamento, O.S. e recebimento</li>
-              <li><Icon name="check" size={17} /> Os avisos de atenção com a realidade da sua oficina</li>
-              <li><Icon name="check" size={17} /> Valores, implantação e regras de contrato na conversa</li>
-              <li><Icon name="check" size={17} /> Sem compromisso de contratação</li>
+              <li><Icon name="check" size={17} /> 7 dias com tudo liberado e usuários ilimitados</li>
+              <li><Icon name="check" size={17} /> Sem cartão de crédito e sem pagar nada</li>
+              <li><Icon name="check" size={17} /> Depois do teste, seus dados continuam guardados</li>
+              <li><Icon name="check" size={17} /> Assina só se quiser continuar</li>
             </ul>
-            <WhatsappLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere conversar agora? Chamar no WhatsApp</WhatsappLink>
+            <DemoLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere ver uma demonstração antes? Chamar no WhatsApp</DemoLink>
           </div>
           <DemoForm />
         </section>

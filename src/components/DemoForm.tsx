@@ -23,7 +23,7 @@ function campaignParams() {
 }
 
 /**
- * Formulário de demonstração. `source` é o nome da página de conteúdo onde ele está
+ * Formulário do teste grátis (a equipe cria a conta e libera o acesso). `source` é o nome da página de conteúdo onde ele está
  * (vai na mensagem para o time saber o que a pessoa estava lendo); `compact` tira o e-mail opcional.
  */
 export function DemoForm({ source, compact = false }: { source?: string; compact?: boolean }) {
@@ -46,6 +46,7 @@ export function DemoForm({ source, compact = false }: { source?: string; compact
       oficina: String(data.get("oficina") || ""),
       mecanicos: String(data.get("mecanicos") || ""),
       email: String(data.get("email") || ""),
+      interesse: "teste_gratis",
       origem: source ? `landing_page: ${source}` : "landing_page",
       ...campaignParams(),
     };
@@ -61,7 +62,7 @@ export function DemoForm({ source, compact = false }: { source?: string; compact
       } else {
         // Sem endpoint, o lead chega pelo WhatsApp comercial com os dados já escritos.
         const lines = [
-          "Olá! Quero conhecer a Auttra.",
+          "Olá! Quero começar o teste grátis de 7 dias da Auttra.",
           "",
           `Nome: ${payload.nome}`,
           `Oficina: ${payload.oficina}`,
@@ -77,14 +78,14 @@ export function DemoForm({ source, compact = false }: { source?: string; compact
         // Abre antes de qualquer await para o navegador não bloquear a nova aba.
         const opened = window.open(url, "_blank");
         if (!opened) {
-          trackEvent("demo_form_success", { mecanicos: payload.mecanicos, channel: "whatsapp" });
+          trackEvent("trial_form_success", { mecanicos: payload.mecanicos, channel: "whatsapp" });
           window.location.href = url;
           return;
         }
         opened.opener = null;
       }
 
-      trackEvent("demo_form_success", { mecanicos: payload.mecanicos, channel: formEndpoint ? "endpoint" : "whatsapp" });
+      trackEvent("trial_form_success", { mecanicos: payload.mecanicos, channel: formEndpoint ? "endpoint" : "whatsapp" });
       window.location.assign(formEndpoint ? "/obrigado/" : "/obrigado/?via=whatsapp");
     } catch (error) {
       setStatus("error");
@@ -133,7 +134,7 @@ export function DemoForm({ source, compact = false }: { source?: string; compact
         {status === "loading"
           ? <><span className="spinner" /> Enviando...</>
           : formEndpoint
-            ? <>Solicitar demonstração <Icon name="arrow" size={18} /></>
+            ? <>Começar teste grátis <Icon name="arrow" size={18} /></>
             : <><Icon name="message" size={18} /> Enviar e abrir o WhatsApp</>}
       </button>
       {schedulingUrl && <a className="form-schedule" href={schedulingUrl} target="_blank" rel="noreferrer">Prefere escolher um horário agora? <Icon name="calendar" size={15} /></a>}

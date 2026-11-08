@@ -6,7 +6,7 @@ import orcamentosScreen from "../assets/screens/orcamentos.webp";
 import ordensScreen from "../assets/screens/ordens.webp";
 import { AlertPanel } from "../components/AlertPanel";
 import { DemoForm } from "../components/DemoForm";
-import { DemoLink, Icon, RichText, WhatsappLink } from "../components/Shared";
+import { DemoLink, Icon, RichText, TrialLink, WhatsappLink, trialLabel } from "../components/Shared";
 import { featureLinks } from "../site/links";
 import {
   contentPages,
@@ -197,16 +197,16 @@ function RelatedLinks({ paths }: { paths: string[] }) {
 // Fechamento com o formulário na própria página: quem chegou pela busca não é mandado para outra.
 function LeadSection({ source }: { source: string }) {
   return (
-    <section id="demonstracao" className="final-cta lead-section page-lead-section shell">
+    <section id="teste-gratis" className="final-cta lead-section page-lead-section shell">
       <div className="lead-copy">
-        <h2>Veja a Auttra com a rotina da sua oficina.</h2>
-        <p>Conte um pouco sobre a oficina. Ao enviar, o WhatsApp abre com tudo preenchido para combinar a demonstração.</p>
+        <h2>Teste a Auttra 7 dias com a rotina da sua oficina.</h2>
+        <p>Conte um pouco sobre a oficina. A gente cria sua conta e libera o acesso pelo WhatsApp.</p>
         <ul>
-          <li><Icon name="check" size={17} /> A demonstração segue o caminho do carro na sua oficina</li>
-          <li><Icon name="check" size={17} /> O valor é apresentado na demonstração, com implantação e treinamento</li>
-          <li><Icon name="check" size={17} /> Sem compromisso de contratação</li>
+          <li><Icon name="check" size={17} /> 7 dias com tudo liberado e usuários ilimitados</li>
+          <li><Icon name="check" size={17} /> Sem cartão de crédito e sem pagar nada</li>
+          <li><Icon name="check" size={17} /> Depois do teste, seus dados continuam guardados</li>
         </ul>
-        <WhatsappLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere conversar agora? Chamar no WhatsApp</WhatsappLink>
+        <DemoLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere ver uma demonstração antes? Chamar no WhatsApp</DemoLink>
       </div>
       <DemoForm source={source} compact />
     </section>
@@ -235,7 +235,7 @@ function FeaturePage({ page }: { page: Page }) {
             <h1>{page.h1}</h1>
             <p className="page-lead">{page.lead}</p>
             <div className="page-actions">
-              <DemoLink>Solicitar demonstração <Icon name="arrow" size={18} /></DemoLink>
+              <TrialLink placement="page_hero">{trialLabel} <Icon name="arrow" size={18} /></TrialLink>
               <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
             </div>
           </div>

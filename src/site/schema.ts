@@ -6,6 +6,8 @@ import {
   CONTACT_PHONE,
   LOGO_IMAGE,
   OG_IMAGE,
+  PLAN_MONTHLY_PRICE,
+  PLAN_SEMIANNUAL_PRICE,
   SITE_NAME,
   SITE_URL,
   SOCIAL_PROFILES,
@@ -63,6 +65,24 @@ function website(): Node {
   };
 }
 
+// Os dois planos, com o preço mensal de cada um.
+function offer(name: string, price: number): Node {
+  return {
+    "@type": "Offer",
+    name,
+    price: price.toFixed(2),
+    priceCurrency: "BRL",
+    priceSpecification: {
+      "@type": "UnitPriceSpecification",
+      price: price.toFixed(2),
+      priceCurrency: "BRL",
+      unitCode: "MON",
+      unitText: "mês",
+    },
+    url: `${SITE_URL}/#preco`,
+  };
+}
+
 function software(): Node {
   return {
     "@type": "SoftwareApplication",
@@ -77,6 +97,7 @@ function software(): Node {
     description:
       "Sistema de gestão para oficina mecânica com ordem de serviço, orçamento em PDF pelo WhatsApp, agenda, estoque com entrada pelo XML da nota, financeiro e relatórios. A tela inicial avisa o que precisa de atenção.",
     featureList: productFeatures,
+    offers: [offer("Plano semestral", PLAN_SEMIANNUAL_PRICE), offer("Plano mensal", PLAN_MONTHLY_PRICE)],
     screenshot: OG_IMAGE,
     audience: { "@type": "BusinessAudience", audienceType: "Oficinas mecânicas" },
     publisher: { "@id": ORG_ID },
