@@ -178,8 +178,37 @@ export function trackEvent(name: string, params: Record<string, string> = {}) {
   (window as TrackingWindow).gtag?.("event", name, { source: "landing_page", page: window.location.pathname, ...params });
 }
 
-// Ação principal do site: começar o teste grátis. Com VITE_SIGNUP_URL, vai direto para o cadastro;
-// sem ele, leva ao formulário da própria página (#teste-gratis), que toda página tem.
+const UTMS = ["utm_source", "utm_medium", "utm_campaign", "utm_term", "utm_content"] as const;
+const CHAVE_UTM = "auttra:utm";
+
+/**
+ * UTMs da visita: os da URL de chegada valem e ficam guardados na aba, para continuarem valendo se a pessoa
+ * navegar por outras páginas do site antes de clicar em "Testar grátis".
+ */
+function utmsDaVisita(): Record<string, string> {
+  const atuais = new URLSearchParams(window.location.search);
+  const daUrl = Object.fromEntries(UTMS.flatMap((k) => (atuais.get(k)?.trim() ? [[k, atuais.get(k)!.trim()]] : [])));
+  try {
+    if (Object.keys(daUrl).length) sessionStorage.setItem(CHAVE_UTM, JSON.stringify(daUrl));
+    return JSON.parse(sessionStorage.getItem(CHAVE_UTM) ?? "{}");
+  } catch {
+    return daUrl;
+  }
+}
+
+/** Endereço do cadastro com os UTMs da visita: o app guarda de qual campanha veio cada cadastro. */
+export function linkCadastro(base: string, utms: Record<string, string>) {
+  try {
+    const url = new URL(base);
+    for (const [k, v] of Object.entries(utms)) url.searchParams.set(k, v);
+    return url.toString();
+  } catch {
+    return base;
+  }
+}
+
+// Ação principal do site: começar o teste grátis. Com VITE_SIGNUP_URL, vai direto para o cadastro (levando os
+// UTMs da visita); sem ele, leva ao formulário da própria página (#teste-gratis), que toda página tem.
 export function TrialLink({
   children,
   className = "button button-primary",
@@ -189,8 +218,15 @@ export function TrialLink({
   className?: string;
   placement: string;
 }) {
+  // A página sai pré-renderizada do build: os UTMs entram no link só no navegador, depois de carregar.
+  const [href, setHref] = useState(signupUrl || "#teste-gratis");
+  useEffect(() => {
+    const utms = utmsDaVisita();
+    if (signupUrl) setHref(linkCadastro(signupUrl, utms));
+  }, []);
+
   return (
-    <a href={signupUrl || "#teste-gratis"} className={className} onClick={() => trackEvent("trial_click", { placement })}>
+    <a href={href} className={className} onClick={() => trackEvent("trial_click", { placement })}>
       {children}
     </a>
   );
