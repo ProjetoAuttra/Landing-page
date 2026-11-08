@@ -5,14 +5,13 @@ import {
   APP_URL_DEFAULT,
   CONTACT_EMAIL,
   CONTACT_PHONE_DISPLAY,
-  LAUNCH_OFFER_LAST_DAY_DISPLAY,
-  LAUNCH_OFFER_MONTHS,
-  PRICE_LAUNCH,
-  PRICE_REGULAR,
+  PLAN_MONTHLY_PRICE,
+  PLAN_SEMIANNUAL_MONTHS,
+  PLAN_SEMIANNUAL_PRICE,
   SITE_URL,
+  TRIAL_DAYS,
   absoluteUrl,
   formatPrice,
-  isLaunchOfferActive,
 } from "./config";
 import { homeFaqs, homeMeta, productFeatures } from "./home";
 import { featurePages, guidePages, type ContentPage, type Faq } from "./pages";
@@ -40,12 +39,9 @@ const facts = [
   `- Acesso para clientes: ${APP_URL_DEFAULT}`,
   `- Contato comercial: WhatsApp ${CONTACT_PHONE_DISPLAY}, e-mail ${CONTACT_EMAIL}`,
   "- Público: oficinas mecânicas no Brasil",
-  `- Preço: plano único com todas as funções e usuários ilimitados, R$ ${formatPrice(PRICE_REGULAR)} por mês por oficina${
-    isLaunchOfferActive()
-      ? `; oferta de lançamento de R$ ${formatPrice(PRICE_LAUNCH)} por mês, garantida por ${LAUNCH_OFFER_MONTHS} meses, para assinaturas feitas até ${LAUNCH_OFFER_LAST_DAY_DISPLAY}`
-      : ""
-  }`,
-  "- Como contratar: demonstração guiada pela rotina da oficina, com implantação, treinamento e regras de contrato",
+  `- Preço: dois planos por oficina, com as mesmas funções e usuários ilimitados. Semestral: R$ ${formatPrice(PLAN_SEMIANNUAL_PRICE)} por mês, com contrato de ${PLAN_SEMIANNUAL_MONTHS} meses no cartão de crédito. Mensal: R$ ${formatPrice(PLAN_MONTHLY_PRICE)} por mês, sem contrato`,
+  `- Teste grátis: ${TRIAL_DAYS} dias com tudo liberado, sem cartão de crédito e sem pagar nada. Sem assinatura depois do teste, a conta fica só para consulta (vê os dados, não cria nem altera nada). Nada é apagado; ao assinar, tudo volta a funcionar na hora`,
+  "- Como começar: teste grátis pelo formulário do site ou pelo WhatsApp comercial; demonstração também pelo WhatsApp",
 ];
 
 function pageLink(page: ContentPage) {

@@ -20,9 +20,6 @@ function seoFiles(): Plugin {
 // Preact no lugar do React (mesma API via preact/compat, ~10x menor) e
 // HTML pré-renderizado no build: cada página chega pronta, com o próprio <head>.
 export default defineConfig({
-  // Momento do build: o HTML pré-renderizado e a primeira renderização no navegador
-  // decidem a oferta de lançamento pela mesma data; depois a página confere a data de hoje.
-  define: { __BUILD_TIME__: JSON.stringify(Date.now()) },
   plugins: [
     preact({
       prerender: {

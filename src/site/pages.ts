@@ -59,12 +59,12 @@ const buyerFaqs: Faq[] = [
   {
     question: "Quanto custa a Auttra?",
     answer:
-      "A Auttra tem um plano só, com todas as funções e usuários ilimitados, cobrado por mês por oficina. O valor está na [seção de preço](/#preco) da página inicial. A implantação, o treinamento da equipe e as regras de contrato e cancelamento são apresentados na demonstração.",
+      "A Auttra tem dois planos, semestral e mensal, com as mesmas funções e usuários ilimitados, cobrados por mês por oficina. Os valores estão na [seção de preço](/#preco) da página inicial. Antes de assinar, dá para testar 7 dias grátis com tudo liberado, sem cartão de crédito.",
   },
   {
-    question: "Como funciona a demonstração?",
+    question: "Como começo a usar?",
     answer:
-      "Você conta sobre a oficina (nome, WhatsApp e quantos mecânicos), a gente entende a rotina e mostra a Auttra seguindo o caminho do carro na sua oficina, do orçamento ao recebimento. Não há compromisso de contratação.",
+      "Pelo teste grátis de 7 dias, com tudo liberado e sem cartão de crédito. Você deixa nome, WhatsApp e oficina no formulário e a gente libera o acesso. Se não assinar depois, seus dados continuam guardados. Se preferir ver o sistema antes, dá para pedir uma demonstração pelo WhatsApp.",
   },
 ];
 
@@ -467,8 +467,8 @@ export const guidePages: ContentPage[] = [
           },
         ],
         aside: {
-          text: "Quer fazer essas perguntas à Auttra? A demonstração segue a rotina da sua oficina e termina com valores e regras de contrato.",
-          link: { label: "Solicitar demonstração", href: "#demonstracao" },
+          text: "Quer tirar essas dúvidas com a Auttra? Teste 7 dias grátis com a rotina da sua oficina, sem cartão de crédito. Os preços estão publicados no site.",
+          link: { label: "Testar 7 dias grátis", href: "#teste-gratis" },
         },
       },
       {
@@ -492,7 +492,7 @@ export const guidePages: ContentPage[] = [
         paragraphs: [
           "A Auttra é um sistema para oficina mecânica que funciona no navegador, no computador e no celular. Ela reúne clientes, veículos, agenda, [orçamentos](/orcamento-oficina-whatsapp/), [ordens de serviço](/ordem-de-servico-oficina/), [estoque](/controle-de-estoque-oficina/), fornecedores e [financeiro](/financeiro-oficina/), com perfis de acesso para Proprietário, Recepção e Mecânico.",
           "O diferencial é a tela inicial, que avisa o que precisa de atenção: O.S. parada há mais de 5 dias, conta vencida, orçamento sem resposta, estoque crítico e conta a pagar no dia seguinte.",
-          "A Auttra tem um plano só, com todas as funções e usuários ilimitados, e o [preço publicado no site](/#preco). A implantação, o treinamento e as regras de contrato são apresentados na demonstração.",
+          "A Auttra tem dois planos, semestral e mensal, com as mesmas funções e usuários ilimitados, e os [preços publicados no site](/#preco). Dá para testar 7 dias grátis, com tudo liberado e sem cartão de crédito, antes de assinar.",
         ],
       },
     ],

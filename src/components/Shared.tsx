@@ -1,11 +1,13 @@
 import { createContext } from "preact";
 import { useContext, useEffect, useState, type ReactNode } from "react";
 import logo from "../assets/auttra-logo.svg";
-import { APP_URL_DEFAULT, CONTACT_EMAIL } from "../site/config";
+import { APP_URL_DEFAULT, CONTACT_EMAIL, TRIAL_DAYS } from "../site/config";
 import { featureLinks, guideLinks, guidesHubLink } from "../site/links";
 
 export const appUrl = import.meta.env.VITE_APP_URL?.trim() || APP_URL_DEFAULT;
 const customWhatsappUrl = import.meta.env.VITE_WHATSAPP_URL?.trim() || "";
+// Cadastro do teste grátis no app. Enquanto não existir, os botões de teste levam ao formulário da página.
+export const signupUrl = import.meta.env.VITE_SIGNUP_URL?.trim() || "";
 const WHATSAPP_BASE = "https://wa.me/5548991268901";
 
 // Link do WhatsApp comercial. Nas páginas de conteúdo a mensagem já diz o que a pessoa estava lendo,
@@ -26,7 +28,7 @@ export function whatsappAboutHref(subject: string) {
   return whatsappMessageHref(`Olá! Vim pelo site e quero saber mais sobre ${subject} na Auttra.`);
 }
 
-// WhatsApp com uma mensagem pronta qualquer (ex.: assinar com o preço de lançamento).
+// WhatsApp com uma mensagem pronta qualquer (ex.: pedir uma demonstração).
 export function whatsappMessageHref(text: string) {
   if (customWhatsappUrl) return customWhatsappUrl;
   return `${WHATSAPP_BASE}?text=${encodeURIComponent(text)}`;
@@ -176,10 +178,35 @@ export function trackEvent(name: string, params: Record<string, string> = {}) {
   (window as TrackingWindow).gtag?.("event", name, { source: "landing_page", page: window.location.pathname, ...params });
 }
 
-// Toda página tem o formulário de demonstração (#demonstracao), então o link é sempre local.
-export function DemoLink({ children, className = "button button-primary" }: { children: ReactNode; className?: string }) {
+// Ação principal do site: começar o teste grátis. Com VITE_SIGNUP_URL, vai direto para o cadastro;
+// sem ele, leva ao formulário da própria página (#teste-gratis), que toda página tem.
+export function TrialLink({
+  children,
+  className = "button button-primary",
+  placement,
+}: {
+  children: ReactNode;
+  className?: string;
+  placement: string;
+}) {
   return (
-    <a href="#demonstracao" className={className} onClick={() => trackEvent("demo_click")}>
+    <a href={signupUrl || "#teste-gratis"} className={className} onClick={() => trackEvent("trial_click", { placement })}>
+      {children}
+    </a>
+  );
+}
+
+/** Texto padrão dos botões de teste. */
+export const trialLabel = `Testar ${TRIAL_DAYS} dias grátis`;
+
+// Demonstração, para quem prefere ver antes de testar: abre o WhatsApp com o pedido escrito.
+export function DemoLink({ children, className }: { children: ReactNode; className?: string }) {
+  const { topic } = useContext(PageContext);
+  const text = topic
+    ? `Olá! Vim pela página "${topic}" do site e quero ver uma demonstração da Auttra.`
+    : "Olá! Vim pelo site e quero ver uma demonstração da Auttra.";
+  return (
+    <a href={whatsappMessageHref(text)} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("demo_click")}>
       {children}
     </a>
   );
@@ -313,7 +340,7 @@ function Header() {
           <a className="nav-login" href={appUrl} target="_blank" rel="noreferrer">
             Acessar plataforma
           </a>
-          <DemoLink className="button button-primary nav-cta">Solicitar demonstração</DemoLink>
+          <TrialLink className="button button-primary nav-cta" placement="header">Testar grátis</TrialLink>
         </nav>
 
         <button
@@ -340,7 +367,7 @@ function Footer() {
         <nav aria-label="Navegação do rodapé">
           {navigation.map(([label, href]) => <a href={sectionHref(href)} key={href}>{label}</a>)}
         </nav>
-        <div className="footer-action"><DemoLink className="footer-demo">Solicitar demonstração <Icon name="arrow" size={16} /></DemoLink></div>
+        <div className="footer-action"><TrialLink className="footer-demo" placement="footer">{trialLabel} <Icon name="arrow" size={16} /></TrialLink></div>
       </div>
       <div className="shell footer-pages">
         <nav aria-label="Recursos do sistema">
@@ -371,7 +398,7 @@ function WhatsappFloat() {
   const [hidden, setHidden] = useState(true);
 
   useEffect(() => {
-    const targets = [".hero-actions", "#demonstracao"]
+    const targets = [".hero-actions", "#teste-gratis"]
       .map((selector) => document.querySelector(selector))
       .filter((element): element is Element => Boolean(element));
     const visible = new Set<Element>();
