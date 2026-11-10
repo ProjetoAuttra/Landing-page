@@ -14,12 +14,12 @@ npm run dev
 Copie `.env.example` para `.env` e ajuste:
 
 - `VITE_APP_URL`: endereço da plataforma para clientes existentes;
-- `VITE_FORM_ENDPOINT`: endpoint HTTPS que recebe o formulário em JSON (`nome`, `whatsapp`, `oficina`, `mecanicos`, `email`, `origem` e os parâmetros `utm_*`, `gclid` e `fbclid` da visita). Vazio, o formulário abre o WhatsApp comercial com os dados já escritos;
-- `VITE_WHATSAPP_URL`: link `https://wa.me/...` do comercial. Vazio, usa o número padrão (48) 99126-8901 nos botões de WhatsApp do hero, do formulário e no botão flutuante;
-- `VITE_GA_MEASUREMENT_ID`: ID do Google Analytics 4. Só carrega depois do consentimento de cookies e envia os eventos `demo_click`, `whatsapp_click` e `demo_form_success`;
+- `VITE_SIGNUP_URL`: cadastro do teste grátis no app. Todos os botões "Testar grátis" levam para ele, com os `utm_*` da visita. Vazio, levam para `VITE_APP_URL`;
+- `VITE_FORM_ENDPOINT`: endpoint HTTPS que recebe o pedido de demonstração em JSON (`nome`, `telefone`, `email`, `oficina`, `mecanicos`, `origem` e os parâmetros `utm_*`, `gclid` e `fbclid` da visita). Vazio, usa o FormSubmit e o pedido chega por e-mail em `auttrasistemas@gmail.com` (o primeiro envio pede uma confirmação única nessa caixa);
+- `VITE_GA_MEASUREMENT_ID`: ID do Google Analytics 4. Só carrega depois do consentimento de cookies e envia os eventos `trial_click`, `demo_click` e `demo_form_success`;
 - `VITE_SCHEDULING_URL`: link de agenda para o lead escolher um horário.
 
-Sem configuração adicional, os leads chegam pelo WhatsApp (48) 99126-8901 e o link de acesso aponta para `https://app.auttra.com.br`.
+Sem configuração adicional, os pedidos de demonstração chegam por e-mail em `auttrasistemas@gmail.com` e o link de acesso aponta para `https://app.auttra.com.br`.
 
 ## Telas do produto
 

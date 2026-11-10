@@ -3,7 +3,9 @@
 
 export const SITE_URL = "https://auttra.com.br";
 export const SITE_NAME = "Auttra";
-export const CONTACT_EMAIL = "contato@auttra.com.br";
+export const CONTACT_EMAIL = "auttrasistemas@gmail.com";
+/** Caixa que recebe os pedidos de demonstração do formulário do site. */
+export const DEMO_EMAIL = "auttrasistemas@gmail.com";
 export const CONTACT_PHONE = "+55-48-99126-8901";
 export const CONTACT_PHONE_DISPLAY = "(48) 99126-8901";
 export const APP_URL_DEFAULT = "https://app.auttra.com.br";

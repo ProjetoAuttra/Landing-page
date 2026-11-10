@@ -6,7 +6,7 @@ import orcamentosScreen from "../assets/screens/orcamentos.webp";
 import ordensScreen from "../assets/screens/ordens.webp";
 import { AlertPanel } from "../components/AlertPanel";
 import { DemoForm } from "../components/DemoForm";
-import { DemoLink, Icon, RichText, TrialLink, WhatsappLink, trialLabel } from "../components/Shared";
+import { DemoLink, Icon, RichText, TrialLink, trialLabel } from "../components/Shared";
 import { featureLinks } from "../site/links";
 import {
   contentPages,
@@ -197,18 +197,17 @@ function RelatedLinks({ paths }: { paths: string[] }) {
 // Fechamento com o formulário na própria página: quem chegou pela busca não é mandado para outra.
 function LeadSection({ source }: { source: string }) {
   return (
-    <section id="teste-gratis" className="final-cta lead-section page-lead-section shell">
+    <section id="demonstracao" className="final-cta lead-section page-lead-section shell">
       <div className="lead-copy">
-        <h2>Teste a Auttra 7 dias com a rotina da sua oficina.</h2>
-        <p>Conte um pouco sobre a oficina. A gente cria sua conta e libera o acesso pelo WhatsApp.</p>
+        <h2>Veja a Auttra com a rotina da sua oficina.</h2>
+        <p>Peça uma demonstração. A gente mostra o sistema na prática e tira suas dúvidas.</p>
         <ul>
-          <li><Icon name="check" size={17} /> 7 dias com tudo liberado e usuários ilimitados</li>
-          <li><Icon name="check" size={17} /> Sem cartão de crédito e sem pagar nada</li>
-          <li><Icon name="check" size={17} /> Depois do teste, seus dados continuam guardados</li>
+          <li><Icon name="check" size={17} /> Uma conversa rápida, no horário que for melhor para você</li>
+          <li><Icon name="check" size={17} /> Sem compromisso de assinar</li>
         </ul>
-        <DemoLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere ver uma demonstração antes? Chamar no WhatsApp</DemoLink>
+        <TrialLink className="lead-alt" placement="page_lead">Prefere testar sozinho? {trialLabel} <Icon name="arrow" size={16} /></TrialLink>
       </div>
-      <DemoForm source={source} compact />
+      <DemoForm source={source} />
     </section>
   );
 }
@@ -236,7 +235,7 @@ function FeaturePage({ page }: { page: Page }) {
             <p className="page-lead">{page.lead}</p>
             <div className="page-actions">
               <TrialLink placement="page_hero">{trialLabel} <Icon name="arrow" size={18} /></TrialLink>
-              <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
+              <DemoLink className="button button-outline" placement="page_hero">Pedir demonstração</DemoLink>
             </div>
           </div>
           {page.alert && (

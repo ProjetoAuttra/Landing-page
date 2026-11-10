@@ -14,7 +14,7 @@ import ordensScreen from "./assets/screens/ordens.webp";
 import { AlertPanel } from "./components/AlertPanel";
 import { DemoForm } from "./components/DemoForm";
 import { HeroPrice, PricingSection } from "./components/Pricing";
-import { DemoLink, Icon, SiteChrome, TrialLink, WhatsappLink, trackEvent, trialLabel, whatsappAboutHref, whatsappHref, type IconName } from "./components/Shared";
+import { DemoLink, Icon, SiteChrome, TrialLink, trialLabel, type IconName } from "./components/Shared";
 import { homeFaqs as faqs } from "./site/home";
 
 // Cada dor da oficina ao lado do aviso da tela inicial que a pega (mesma ordem do quadro "Precisa de atenção").
@@ -46,30 +46,26 @@ const attentionPairs = [
   },
 ];
 
-const features: { icon: IconName; title: string; text: string; whatsappTopic?: string }[] = [
+const features: { icon: IconName; title: string; text: string }[] = [
   {
     icon: "message",
     title: "Orçamento no WhatsApp do cliente",
     text: "Gere o orçamento em PDF e envie pelo WhatsApp sem sair da tela. Aprovado, ele vira ordem de serviço com um clique.",
-    whatsappTopic: "o orçamento pelo WhatsApp",
   },
   {
     icon: "package",
     title: "Estoque pelo XML da nota",
     text: "Importe o XML da nota do fornecedor e as peças entram com custo e quantidade, sem digitar item por item.",
-    whatsappTopic: "o controle de estoque",
   },
   {
     icon: "clipboard",
     title: "O.S. completa em PDF",
     text: "Serviços, peças, mecânico responsável e valores na mesma ordem, pronta para imprimir ou mandar para o cliente.",
-    whatsappTopic: "a ordem de serviço",
   },
   {
     icon: "wallet",
     title: "Contas a pagar e receber",
     text: "Parcelas, desconto, multa e pagamento parcial. A O.S. concluída já gera a cobrança em contas a receber.",
-    whatsappTopic: "as contas a pagar e receber",
   },
   {
     icon: "chart",
@@ -265,7 +261,7 @@ function App() {
               </p>
               <div className="hero-actions">
                 <TrialLink placement="hero">{trialLabel} <Icon name="arrow" size={18} /></TrialLink>
-                <WhatsappLink><Icon name="message" size={18} /> Chamar no WhatsApp</WhatsappLink>
+                <DemoLink className="button button-outline" placement="hero">Pedir demonstração</DemoLink>
               </div>
               <HeroPrice />
             </div>
@@ -383,17 +379,6 @@ function App() {
                 <div>
                   <h3>{feature.title}</h3>
                   <p>{feature.text}</p>
-                  {feature.whatsappTopic && (
-                    <a
-                      className="feature-more"
-                      href={whatsappAboutHref(feature.whatsappTopic)}
-                      target="_blank"
-                      rel="noreferrer"
-                      onClick={() => trackEvent("whatsapp_click", { placement: "feature", feature: feature.title })}
-                    >
-                      <Icon name="message" size={15} /> Perguntar no WhatsApp<span className="visually-hidden"> sobre {feature.whatsappTopic}</span>
-                    </a>
-                  )}
                 </div>
               </li>
             ))}
@@ -424,7 +409,7 @@ function App() {
             <h2>O que as oficinas perguntam antes de começar.</h2>
             <p>
               Ficou alguma dúvida?{" "}
-              <a href={whatsappHref()} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click", { placement: "faq" })}>Pergunte no WhatsApp</a>
+              <DemoLink placement="faq">Peça uma demonstração</DemoLink>
               {" "}e veja a Auttra com a rotina da sua oficina.
             </p>
           </div>
@@ -446,17 +431,16 @@ function App() {
           </div>
         </section>
 
-        <section id="teste-gratis" className="final-cta lead-section shell" data-reveal="scale">
+        <section id="demonstracao" className="final-cta lead-section shell" data-reveal="scale">
           <div className="lead-copy">
-            <h2>Teste a Auttra 7 dias na sua oficina, de graça.</h2>
-            <p>Conte um pouco sobre a oficina. A gente cria sua conta e libera o acesso pelo WhatsApp.</p>
+            <h2>Quer ver a Auttra funcionando antes?</h2>
+            <p>Peça uma demonstração. A gente mostra o sistema com a rotina da sua oficina e tira suas dúvidas.</p>
             <ul>
-              <li><Icon name="check" size={17} /> 7 dias com tudo liberado e usuários ilimitados</li>
-              <li><Icon name="check" size={17} /> Sem cartão de crédito e sem pagar nada</li>
-              <li><Icon name="check" size={17} /> Depois do teste, seus dados continuam guardados</li>
-              <li><Icon name="check" size={17} /> Assina só se quiser continuar</li>
+              <li><Icon name="check" size={17} /> Uma conversa rápida, no horário que for melhor para você</li>
+              <li><Icon name="check" size={17} /> Você vê os avisos, a O.S., o estoque e o financeiro na prática</li>
+              <li><Icon name="check" size={17} /> Sem compromisso de assinar</li>
             </ul>
-            <DemoLink className="lead-whatsapp"><Icon name="message" size={17} /> Prefere ver uma demonstração antes? Chamar no WhatsApp</DemoLink>
+            <TrialLink className="lead-alt" placement="lead">Prefere testar sozinho? {trialLabel} <Icon name="arrow" size={16} /></TrialLink>
           </div>
           <DemoForm />
         </section>

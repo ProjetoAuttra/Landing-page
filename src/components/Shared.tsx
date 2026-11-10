@@ -5,40 +5,14 @@ import { APP_URL_DEFAULT, CONTACT_EMAIL, TRIAL_DAYS } from "../site/config";
 import { featureLinks, guideLinks, guidesHubLink } from "../site/links";
 
 export const appUrl = import.meta.env.VITE_APP_URL?.trim() || APP_URL_DEFAULT;
-const customWhatsappUrl = import.meta.env.VITE_WHATSAPP_URL?.trim() || "";
-// Cadastro do teste grátis no app. Enquanto não existir, os botões de teste levam ao formulário da página.
-export const signupUrl = import.meta.env.VITE_SIGNUP_URL?.trim() || "";
-const WHATSAPP_BASE = "https://wa.me/5548991268901";
-
-// Link do WhatsApp comercial. Nas páginas de conteúdo a mensagem já diz o que a pessoa estava lendo,
-// para o atendimento não começar do zero. Um link próprio em VITE_WHATSAPP_URL é usado como está.
-export function whatsappHref(topic?: string) {
-  if (customWhatsappUrl) return customWhatsappUrl;
-  const text = topic
-    ? `Olá! Vim pela página "${topic}" do site e quero conhecer a Auttra.`
-    : "Olá! Vim pelo site e quero conhecer a Auttra.";
-  return `${WHATSAPP_BASE}?text=${encodeURIComponent(text)}`;
-}
-
-export const whatsappUrl = whatsappHref();
-
-// WhatsApp com a pergunta sobre um recurso específico já escrita (botões "Saiba mais" da página inicial).
-export function whatsappAboutHref(subject: string) {
-  if (customWhatsappUrl) return customWhatsappUrl;
-  return whatsappMessageHref(`Olá! Vim pelo site e quero saber mais sobre ${subject} na Auttra.`);
-}
-
-// WhatsApp com uma mensagem pronta qualquer (ex.: pedir uma demonstração).
-export function whatsappMessageHref(text: string) {
-  if (customWhatsappUrl) return customWhatsappUrl;
-  return `${WHATSAPP_BASE}?text=${encodeURIComponent(text)}`;
-}
+// Cadastro do teste grátis no app. Sem VITE_SIGNUP_URL, os botões de teste levam à plataforma.
+export const signupUrl = import.meta.env.VITE_SIGNUP_URL?.trim() || appUrl;
 const gaMeasurementId = import.meta.env.VITE_GA_MEASUREMENT_ID?.trim() || "";
 
 type PageContextValue = {
   /** Página inicial: os links de seção são âncoras, para não recarregar nem perder os parâmetros de campanha. */
   onHome: boolean;
-  /** Nome da página de conteúdo, levado para a mensagem do WhatsApp. */
+  /** Nome da página de conteúdo. */
   topic?: string;
   /** Seção do menu em que a página está. */
   current?: "recursos" | "guias";
@@ -95,8 +69,8 @@ export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {
     menu: <path d="M4 7h16M4 12h16M4 17h16" />,
     message: (
       <>
-        <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4.1A8 8 0 1 1 20 11.5Z" />
-        <path d="M8.4 8.4c.5 2.6 2.6 4.7 5.2 5.2" />
+        <path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z" />
+        <path d="M8 10.5h8M8 14h5" />
       </>
     ),
     package: (
@@ -166,7 +140,6 @@ export function RichText({ text }: { text: string }) {
 
 export const navigation = [
   ["Como funciona", "#atencao"],
-  ["Produto", "#produto"],
   ["Recursos", "#recursos"],
   ["Preço", "#preco"],
   ["Dúvidas", "#duvidas"],
@@ -207,8 +180,7 @@ export function linkCadastro(base: string, utms: Record<string, string>) {
   }
 }
 
-// Ação principal do site: começar o teste grátis. Com VITE_SIGNUP_URL, vai direto para o cadastro (levando os
-// UTMs da visita); sem ele, leva ao formulário da própria página (#teste-gratis), que toda página tem.
+// Ação principal do site: começar o teste grátis no cadastro do app, levando os UTMs da visita.
 export function TrialLink({
   children,
   className = "button button-primary",
@@ -219,10 +191,9 @@ export function TrialLink({
   placement: string;
 }) {
   // A página sai pré-renderizada do build: os UTMs entram no link só no navegador, depois de carregar.
-  const [href, setHref] = useState(signupUrl || "#teste-gratis");
+  const [href, setHref] = useState(signupUrl);
   useEffect(() => {
-    const utms = utmsDaVisita();
-    if (signupUrl) setHref(linkCadastro(signupUrl, utms));
+    setHref(linkCadastro(signupUrl, utmsDaVisita()));
   }, []);
 
   return (
@@ -235,23 +206,10 @@ export function TrialLink({
 /** Texto padrão dos botões de teste. */
 export const trialLabel = `Testar ${TRIAL_DAYS} dias grátis`;
 
-// Demonstração, para quem prefere ver antes de testar: abre o WhatsApp com o pedido escrito.
-export function DemoLink({ children, className }: { children: ReactNode; className?: string }) {
-  const { topic } = useContext(PageContext);
-  const text = topic
-    ? `Olá! Vim pela página "${topic}" do site e quero ver uma demonstração da Auttra.`
-    : "Olá! Vim pelo site e quero ver uma demonstração da Auttra.";
+// Demonstração, para quem prefere ver antes de testar: leva ao formulário da própria página (#demonstracao).
+export function DemoLink({ children, className, placement }: { children: ReactNode; className?: string; placement?: string }) {
   return (
-    <a href={whatsappMessageHref(text)} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("demo_click")}>
-      {children}
-    </a>
-  );
-}
-
-export function WhatsappLink({ children, className = "button button-whatsapp" }: { children: ReactNode; className?: string }) {
-  const { topic } = useContext(PageContext);
-  return (
-    <a href={whatsappHref(topic)} className={className} target="_blank" rel="noreferrer" onClick={() => trackEvent("whatsapp_click")}>
+    <a href="#demonstracao" className={className} onClick={() => trackEvent("demo_click", placement ? { placement } : {})}>
       {children}
     </a>
   );
@@ -428,52 +386,14 @@ function Footer() {
   );
 }
 
-// Botão flutuante do WhatsApp: some enquanto os botões do topo ou o formulário estão na tela,
-// para não cobrir os campos nem repetir o que já está à vista.
-function WhatsappFloat() {
-  const [hidden, setHidden] = useState(true);
-
-  useEffect(() => {
-    const targets = [".hero-actions", "#teste-gratis"]
-      .map((selector) => document.querySelector(selector))
-      .filter((element): element is Element => Boolean(element));
-    const visible = new Set<Element>();
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => (entry.isIntersecting ? visible.add(entry.target) : visible.delete(entry.target)));
-      setHidden(visible.size > 0);
-    });
-    targets.forEach((target) => observer.observe(target));
-    return () => observer.disconnect();
-  }, []);
-
-  return (
-    <a
-      className={hidden ? "whatsapp-float is-hidden" : "whatsapp-float"}
-      href={whatsappUrl}
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Conversar com a Auttra pelo WhatsApp"
-      aria-hidden={hidden}
-      tabIndex={hidden ? -1 : undefined}
-      onClick={() => trackEvent("whatsapp_click", { placement: "float" })}
-    >
-      <Icon name="message" size={24} /><span>Chamar no WhatsApp</span>
-    </a>
-  );
-}
-
-// Moldura comum a todas as páginas: cabeçalho, rodapé, WhatsApp flutuante e consentimento.
-// O botão flutuante fica só na página inicial: as páginas de conteúdo já têm o WhatsApp no topo
-// e no fim, e no celular o botão cobria o texto.
+// Moldura comum a todas as páginas: cabeçalho, rodapé e consentimento.
 export function SiteChrome({ children, ...page }: PageContextValue & { children: ReactNode }) {
-  const { onHome } = page;
   return (
     <PageContext.Provider value={page}>
       <a className="skip-link" href="#inicio">Pular para o conteúdo</a>
       <Header />
       {children}
       <Footer />
-      {onHome && <WhatsappFloat />}
       <CookieConsent />
     </PageContext.Provider>
   );
