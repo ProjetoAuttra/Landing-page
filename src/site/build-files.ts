@@ -41,7 +41,7 @@ const facts = [
   "- Público: oficinas mecânicas no Brasil",
   `- Preço: dois planos por oficina, com as mesmas funções e usuários ilimitados. Semestral: R$ ${formatPrice(PLAN_SEMIANNUAL_PRICE)} por mês, com contrato de ${PLAN_SEMIANNUAL_MONTHS} meses no cartão de crédito. Mensal: R$ ${formatPrice(PLAN_MONTHLY_PRICE)} por mês, sem contrato`,
   `- Teste grátis: ${TRIAL_DAYS} dias com tudo liberado, sem cartão de crédito e sem pagar nada. Sem assinatura depois do teste, a conta fica só para consulta (vê os dados, não cria nem altera nada). Nada é apagado; ao assinar, tudo volta a funcionar na hora`,
-  "- Como começar: teste grátis pelo formulário do site ou pelo WhatsApp comercial; demonstração também pelo WhatsApp",
+  "- Como começar: teste grátis pelo cadastro do app, ou pedido de demonstração pelo formulário do site",
 ];
 
 function pageLink(page: ContentPage) {

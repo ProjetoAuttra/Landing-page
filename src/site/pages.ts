@@ -64,7 +64,7 @@ const buyerFaqs: Faq[] = [
   {
     question: "Como começo a usar?",
     answer:
-      "Pelo teste grátis de 7 dias, com tudo liberado e sem cartão de crédito. Você deixa nome, WhatsApp e oficina no formulário e a gente libera o acesso. Se não assinar depois, seus dados continuam guardados. Se preferir ver o sistema antes, dá para pedir uma demonstração pelo WhatsApp.",
+      "Pelo teste grátis de 7 dias, com tudo liberado e sem cartão de crédito. Você cria sua conta no cadastro e já começa a usar. Se não assinar depois, seus dados continuam guardados. Se preferir ver o sistema antes, dá para pedir uma demonstração pelo formulário do site.",
   },
 ];
 
@@ -467,8 +467,8 @@ export const guidePages: ContentPage[] = [
           },
         ],
         aside: {
-          text: "Quer tirar essas dúvidas com a Auttra? Teste 7 dias grátis com a rotina da sua oficina, sem cartão de crédito. Os preços estão publicados no site.",
-          link: { label: "Testar 7 dias grátis", href: "#teste-gratis" },
+          text: "Quer tirar essas dúvidas com a Auttra? Peça uma demonstração com a rotina da sua oficina. Os preços estão publicados no site.",
+          link: { label: "Pedir demonstração", href: "#demonstracao" },
         },
       },
       {

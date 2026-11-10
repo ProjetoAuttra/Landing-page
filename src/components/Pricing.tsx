@@ -111,7 +111,7 @@ export function PricingSection() {
                 {trialLabel} <Icon name="arrow" size={17} />
               </TrialLink>
               <p className="price-trial-note">Sem cartão de crédito. Você só assina se quiser continuar.</p>
-              <DemoLink className="price-demo">Antes, quero ver uma demonstração</DemoLink>
+              <DemoLink className="price-demo" placement="pricing">Antes, quero ver uma demonstração</DemoLink>
             </div>
           </div>
 
