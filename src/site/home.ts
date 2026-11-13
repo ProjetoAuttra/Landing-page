@@ -5,10 +5,11 @@ export const homeMeta = {
   path: "/",
   title: "Sistema para oficina mecânica | Auttra",
   description:
-    "Sistema para oficina mecânica que mostra o próximo passo: O.S. parada, conta vencida, orçamento sem resposta e estoque crítico na tela inicial. Teste 7 dias grátis, sem cartão.",
+    "O.S. parada, conta vencida, orçamento sem resposta e peça acabando aparecem na tela inicial. Teste a Auttra 7 dias grátis, sem cartão.",
   socialTitle: "Auttra | Sistema para oficina mecânica",
-  socialDescription: "Você dirige a oficina. A Auttra mostra o caminho.",
-  updated: "2026-11-05",
+  socialDescription:
+    "Ordem de serviço, orçamento no WhatsApp, estoque e financeiro. A tela inicial mostra o que precisa de atenção na oficina.",
+  updated: "2026-11-13",
 };
 
 // O que o sistema faz, em frases curtas. Vai para o `featureList` do schema e para o llms.txt.

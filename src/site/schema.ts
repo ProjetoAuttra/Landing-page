@@ -3,7 +3,6 @@
 
 import {
   CONTACT_EMAIL,
-  CONTACT_PHONE,
   LOGO_IMAGE,
   OG_IMAGE,
   PLAN_MONTHLY_PRICE,
@@ -43,7 +42,6 @@ function organization(): Node {
       {
         "@type": "ContactPoint",
         contactType: "sales",
-        telephone: CONTACT_PHONE,
         email: CONTACT_EMAIL,
         areaServed: "BR",
         availableLanguage: ["Portuguese"],
