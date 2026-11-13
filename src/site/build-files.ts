@@ -4,7 +4,6 @@
 import {
   APP_URL_DEFAULT,
   CONTACT_EMAIL,
-  CONTACT_PHONE_DISPLAY,
   PLAN_MONTHLY_PRICE,
   PLAN_SEMIANNUAL_MONTHS,
   PLAN_SEMIANNUAL_PRICE,
@@ -37,7 +36,7 @@ const summary = [
 const facts = [
   "- Site: https://auttra.com.br/",
   `- Acesso para clientes: ${APP_URL_DEFAULT}`,
-  `- Contato comercial: WhatsApp ${CONTACT_PHONE_DISPLAY}, e-mail ${CONTACT_EMAIL}`,
+  `- Contato comercial: e-mail ${CONTACT_EMAIL}`,
   "- Público: oficinas mecânicas no Brasil",
   `- Preço: dois planos por oficina, com as mesmas funções e usuários ilimitados. Semestral: R$ ${formatPrice(PLAN_SEMIANNUAL_PRICE)} por mês, com contrato de ${PLAN_SEMIANNUAL_MONTHS} meses no cartão de crédito. Mensal: R$ ${formatPrice(PLAN_MONTHLY_PRICE)} por mês, sem contrato`,
   `- Teste grátis: ${TRIAL_DAYS} dias com tudo liberado, sem cartão de crédito e sem pagar nada. Sem assinatura depois do teste, a conta fica só para consulta (vê os dados, não cria nem altera nada). Nada é apagado; ao assinar, tudo volta a funcionar na hora`,
